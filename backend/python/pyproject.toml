@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cert-practice-ai"
+version = "0.1.0"
+description = "Stateless AI service for the certification practice platform"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.161,<1.0",
+  "httpx>=0.28,<1.0",
+  "pydantic>=2.14,<3.0",
+  "pydantic-settings>=2.16,<3.0",
+  "uvicorn[standard]>=0.54,<1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy>=2.4,<3.0",
+  "pytest>=9.1,<10.0",
+  "pytest-asyncio>=1.4,<2.0",
+  "ruff>=0.17,<1.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-ra"
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["."]
+extend-exclude = [".venv"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "ASYNC", "RUF"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_ignores = true
+show_error_codes = true
+pretty = true
+files = ["app", "tests"]
+exclude = ["\\.venv"]

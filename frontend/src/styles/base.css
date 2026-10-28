@@ -1,0 +1,40 @@
+:root {
+  --color-bg: #f4f6fb;
+  --color-surface: #ffffff;
+  --color-border: #dbe2ef;
+  --color-text: #16203a;
+  --color-muted: #5b6780;
+  --color-accent: #3157c8;
+  --color-chip: #e9efff;
+  --color-chip-text: #24429a;
+  color-scheme: light;
+  font-family:
+    'Inter',
+    'Noto Sans SC',
+    'PingFang SC',
+    'Microsoft YaHei',
+    system-ui,
+    -apple-system,
+    sans-serif;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 20% 0%, rgb(49 87 200 / 12%), transparent 42rem), var(--color-bg);
+}
+
+a {
+  color: inherit;
+}
