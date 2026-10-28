@@ -10,4 +10,6 @@ public interface QuestionVersionTagRepository extends JpaRepository<QuestionVers
     List<QuestionVersionTag> findByIdQuestionVersionId(UUID questionVersionId);
 
     List<QuestionVersionTag> findByIdTagId(UUID tagId);
+
+    void deleteByIdQuestionVersionId(UUID questionVersionId);
 }

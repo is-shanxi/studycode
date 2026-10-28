@@ -11,4 +11,6 @@ public interface SessionItemRepository extends JpaRepository<SessionItem, UUID> 
     List<SessionItem> findBySessionIdOrderByOrdinalAsc(UUID sessionId);
 
     Optional<SessionItem> findByIdAndSessionId(UUID id, UUID sessionId);
+
+    boolean existsByQuestionVersionId(UUID questionVersionId);
 }

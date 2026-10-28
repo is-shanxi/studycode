@@ -11,4 +11,6 @@ public interface SubjectRepository extends JpaRepository<Subject, UUID> {
     List<Subject> findByCertificateIdOrderBySortOrderAsc(UUID certificateId);
 
     Optional<Subject> findByCertificateIdAndCode(UUID certificateId, String code);
+
+    Optional<Subject> findFirstByCode(String code);
 }

@@ -29,6 +29,9 @@ public class Question {
     @Column(name = "subject_id", nullable = false)
     private UUID subjectId;
 
+    @Column(name = "chapter_id")
+    private UUID chapterId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false, length = 24)
     private Type type;
