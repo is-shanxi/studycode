@@ -53,7 +53,9 @@ public class ActiveUserFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(final HttpServletRequest request) {
-        String path = request.getRequestURI();
-        return !path.startsWith("/api/v1") || path.startsWith("/api/v1/auth/");
+        // Public auth endpoints carry no authenticated principal, so the status
+        // check simply passes through. Authenticated /auth/me and logout requests
+        // must still reject disabled or anonymized accounts.
+        return !request.getRequestURI().startsWith("/api/v1");
     }
 }

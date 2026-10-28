@@ -11,4 +11,6 @@ public interface ChapterRepository extends JpaRepository<Chapter, UUID> {
     List<Chapter> findBySubjectIdOrderBySortOrderAsc(UUID subjectId);
 
     Optional<Chapter> findBySubjectIdAndCode(UUID subjectId, String code);
+
+    Optional<Chapter> findFirstBySubjectIdAndCode(UUID subjectId, String code);
 }

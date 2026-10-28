@@ -12,7 +12,9 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Setter
@@ -52,6 +54,10 @@ public class ImportBatch {
 
     @Column(name = "confirmed_at")
     private Instant confirmedAt;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "payload_json", columnDefinition = "jsonb")
+    private String payloadJson;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

@@ -14,7 +14,9 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
@@ -35,6 +37,7 @@ public class SecurityConfig {
             final CsrfTokenRepository csrfTokenRepository,
             final CsrfTokenRequestHandler csrfTokenRequestHandler,
             final ProblemDetailsWriter problemDetailsWriter,
+            final SecurityContextRepository securityContextRepository,
             final AppUserRepository users) throws Exception {
         ActiveUserFilter activeUserFilter = new ActiveUserFilter(users, problemDetailsWriter);
         CsrfCookieFilter csrfCookieFilter = new CsrfCookieFilter();
@@ -55,6 +58,8 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(csrfTokenRepository)
                         .csrfTokenRequestHandler(csrfTokenRequestHandler))
+                .securityContext(securityContext -> securityContext
+                        .securityContextRepository(securityContextRepository))
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .requestCache(AbstractHttpConfigurer::disable)
@@ -88,5 +93,10 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
+    }
+
+    @Bean
+    public SecurityContextRepository securityContextRepository() {
+        return new HttpSessionSecurityContextRepository();
     }
 }

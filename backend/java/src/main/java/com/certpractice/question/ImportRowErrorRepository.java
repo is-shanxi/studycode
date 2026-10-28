@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ImportRowErrorRepository extends JpaRepository<ImportRowError, UUID> {
 
     List<ImportRowError> findByBatchIdOrderByRowNumberAsc(UUID batchId);
+
+    void deleteByBatchId(UUID batchId);
 }

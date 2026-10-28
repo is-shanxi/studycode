@@ -15,4 +15,10 @@ public interface QuestionVersionRepository extends JpaRepository<QuestionVersion
     Optional<QuestionVersion> findByQuestionIdAndStatusAndSupersededAtIsNull(
             UUID questionId,
             Question.Status status);
+
+    Optional<QuestionVersion> findFirstByQuestionIdOrderByVersionNoDesc(UUID questionId);
+
+    Optional<QuestionVersion> findByIdAndQuestionId(UUID id, UUID questionId);
+
+    long countByStemIgnoreCase(String stem);
 }
