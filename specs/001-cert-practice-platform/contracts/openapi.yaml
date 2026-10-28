@@ -1,0 +1,176 @@
+openapi: 3.1.0
+info:
+  title: 考证刷题平台 API
+  version: 0.1.0
+  description: |
+    浏览器访问 Java 业务后端的 HTTP 契约骨架。完整字段、业务规则与内部
+    Java/Python 契约见同目录的 http-api.md；路径将在各交付阶段逐步补齐。
+  contact:
+    name: Cert Practice Team
+servers:
+  - url: http://localhost:8080/api/v1
+    description: 本地 Java API
+tags:
+  - name: auth
+    description: 注册、登录、退出与会话
+  - name: profile
+    description: 个人资料、密码与注销
+  - name: catalog
+    description: 证书、科目、章节与标签
+  - name: questions
+    description: 公开题库搜索与题目详情
+  - name: practice
+    description: 练习与自测会话、提交与自评
+  - name: records
+    description: 记录、收藏与错题
+  - name: community
+    description: 讨论、评论、举报与纠错
+  - name: notifications
+    description: 站内通知
+  - name: ai
+    description: AI 辅导与额度
+  - name: admin
+    description: 题目、用户、审核、看板与审计
+paths: {}
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: SESSION
+    csrfHeader:
+      type: apiKey
+      in: header
+      name: X-XSRF-TOKEN
+  schemas:
+    Problem:
+      type: object
+      description: RFC 9457 Problem Details 扩展结构。
+      required:
+        - type
+        - title
+        - status
+        - code
+        - traceId
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        detail:
+          type: string
+        code:
+          type: string
+          examples:
+            - ANSWERS_INCOMPLETE
+        traceId:
+          type: string
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+    PageResponse:
+      type: object
+      required:
+        - items
+        - page
+        - size
+        - total
+      properties:
+        items:
+          type: array
+          items: {}
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+    IdempotencyKey:
+      type: string
+      description: 客户端生成的幂等键；相同用户与操作的重复请求返回原始响应。
+      minLength: 1
+      maxLength: 128
+  parameters:
+    Page:
+      name: page
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    Size:
+      name: size
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema:
+        $ref: '#/components/schemas/IdempotencyKey'
+  responses:
+    Unauthorized:
+      description: 未登录或会话已失效。
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Forbidden:
+      description: 已登录但角色或资源所有权不足。
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotFound:
+      description: 资源不存在，或无权得知其存在。
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Conflict:
+      description: 状态冲突或幂等请求不一致。
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    UnprocessableEntity:
+      description: 业务规则不满足。
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    TooManyRequests:
+      description: 请求频率或 AI 额度超限。
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    ServiceUnavailable:
+      description: AI 或依赖暂不可用。
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+security:
+  - cookieAuth: []

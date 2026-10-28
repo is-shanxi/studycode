@@ -1,0 +1,32 @@
+name: cert-practice
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cert-practice-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cert_practice}
+      POSTGRES_USER: ${POSTGRES_USER:-cert_practice}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-only-password}
+      POSTGRES_INITDB_ARGS: --encoding=UTF8
+      TZ: UTC
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    networks:
+      - cert-practice
+
+volumes:
+  postgres-data:
+
+networks:
+  cert-practice:
+    driver: bridge

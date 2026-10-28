@@ -15,3 +15,46 @@ qdata/
 
 # 数据库备份
 *.sql.gz
+
+# Node.js / frontend
+node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/playwright-report/
+frontend/test-results/
+pnpm-debug.log*
+npm-debug.log*
+*.log
+
+# Java / Maven
+target/
+build/
+out/
+*.class
+*.jar
+*.war
+
+# Python
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Local environment and secrets
+.env
+.env.local
+.env.*.local
+infra/env/.env.local
+
+# IDE and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+*.tmp

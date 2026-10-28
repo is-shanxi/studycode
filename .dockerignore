@@ -1,0 +1,23 @@
+# Build contexts should never include local dependencies, build output or secrets.
+.git
+.gitignore
+.idea
+.vscode
+node_modules
+frontend/node_modules
+frontend/dist
+frontend/coverage
+frontend/playwright-report
+frontend/test-results
+backend/java/target
+backend/python/.venv
+backend/python/*.egg-info
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+.env
+.env.*
+infra/env/.env.local
+*.log
