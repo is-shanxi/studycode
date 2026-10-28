@@ -98,58 +98,58 @@
 
 ### Tests for User Story 1
 
-- [ ] T043 [P] [US1] Add failing integration tests for registration, login, role escalation, ownership and admin self-deletion rejection in `backend/java/src/test/java/com/certpractice/identity/AuthIntegrationTest.java` (AC-01、AC-14)
-- [ ] T044 [P] [US1] Add failing integration tests for question versions, publishing and historical references in `backend/java/src/test/java/com/certpractice/question/QuestionVersionIntegrationTest.java` (AC-06)
-- [ ] T045 [P] [US1] Add failing integration tests for session creation, submit, self-assessment and wrong-question updates in `backend/java/src/test/java/com/certpractice/practice/PracticeIntegrationTest.java` (AC-03、AC-04、AC-05、AC-07)
-- [ ] T046 [P] [US1] Add failing contract tests proving practice, search and discussion responses omit answers before submission in `backend/java/src/test/java/com/certpractice/practice/AnswerVisibilityContractTest.java` (AC-02、AC-03)
-- [ ] T047 [P] [US1] Add failing frontend unit tests for answer visibility and session actions in `frontend/tests/unit/practice-session.spec.ts`
-- [ ] T048 [P] [US1] Add failing Playwright journeys for register, practice submit and version history in `frontend/tests/e2e/p1-core-flow.spec.ts`
+- [X] T043 [P] [US1] Add failing integration tests for registration, login, role escalation, ownership and admin self-deletion rejection in `backend/java/src/test/java/com/certpractice/identity/AuthIntegrationTest.java` (AC-01、AC-14)
+- [X] T044 [P] [US1] Add failing integration tests for question versions, publishing and historical references in `backend/java/src/test/java/com/certpractice/question/QuestionVersionIntegrationTest.java` (AC-06)
+- [X] T045 [P] [US1] Add failing integration tests for session creation, submit, self-assessment and wrong-question updates in `backend/java/src/test/java/com/certpractice/practice/PracticeIntegrationTest.java` (AC-03、AC-04、AC-05、AC-07)
+- [X] T046 [P] [US1] Add failing contract tests proving practice, search and discussion responses omit answers before submission in `backend/java/src/test/java/com/certpractice/practice/AnswerVisibilityContractTest.java` (AC-02、AC-03)
+- [X] T047 [P] [US1] Add failing frontend unit tests for answer visibility and session actions in `frontend/tests/unit/practice-session.spec.ts`
+- [X] T048 [P] [US1] Add failing Playwright journeys for register, practice submit and version history in `frontend/tests/e2e/p1-core-flow.spec.ts`
 
 ### Implementation for User Story 1
 
-- [ ] T049 [US1] Implement registration, login, logout, password change and account anonymization with an ADMIN self-deletion guard in `backend/java/src/main/java/com/certpractice/identity/IdentityService.java` (FR-01～04)
-- [ ] T050 [US1] Implement authentication and profile endpoints in `backend/java/src/main/java/com/certpractice/identity/IdentityController.java` and `backend/java/src/main/java/com/certpractice/identity/ProfileController.java`
-- [ ] T051 [P] [US1] Implement catalog tree and tag queries in `backend/java/src/main/java/com/certpractice/catalog/CatalogService.java` and `CatalogController.java`
-- [ ] T052 [P] [US1] Implement safe keyword and multi-tag search in `backend/java/src/main/java/com/certpractice/question/QuestionSearchService.java` (FR-05～06)
-- [ ] T053 [US1] Implement draft creation, cloning and immutable version validation in `backend/java/src/main/java/com/certpractice/question/QuestionAuthoringService.java` (FR-07～09)
-- [ ] T054 [US1] Implement review, publish, offline and transactional version pointer switching in `backend/java/src/main/java/com/certpractice/question/QuestionLifecycleService.java` (FR-08～10)
-- [ ] T055 [US1] Implement admin question and version endpoints in `backend/java/src/main/java/com/certpractice/question/AdminQuestionController.java`
-- [ ] T056 [US1] Add failing import validation tests and implement CSV/XLSX parsing, schema validation, alias checks and duplicate detection in `backend/java/src/test/java/com/certpractice/question/QuestionImportIntegrationTest.java` and `backend/java/src/main/java/com/certpractice/question/QuestionImportService.java` (FR-11、AC-13)
-- [ ] T057 [US1] Implement import preview and confirmation endpoints in `backend/java/src/main/java/com/certpractice/question/QuestionImportController.java`
-- [ ] T058 [US1] Implement weighted selection, bucket quotas, difficulty targets and shortage fallback in `backend/java/src/main/java/com/certpractice/practice/QuestionSelectionService.java` (FR-13)
-- [ ] T059 [US1] Implement session creation, safe loading and answer upsert in `backend/java/src/main/java/com/certpractice/practice/PracticeSessionService.java` (FR-14)
-- [ ] T060 [US1] Implement locked submission, grading and idempotent replay in `backend/java/src/main/java/com/certpractice/practice/PracticeSubmissionService.java` (FR-15)
-- [ ] T061 [US1] Implement fill normalization, alias matching and per-item self-assessment state transitions in `backend/java/src/main/java/com/certpractice/practice/FillAssessmentService.java` (FR-16～18)
-- [ ] T062 [US1] Implement answer-safe and result DTO mappers in `backend/java/src/main/java/com/certpractice/practice/PracticeDtoMapper.java`
-- [ ] T063 [US1] Implement practice record list and version-preserving detail queries in `backend/java/src/main/java/com/certpractice/practice/PracticeRecordService.java`
-- [ ] T064 [US1] Implement idempotent favorite add/remove and listing in `backend/java/src/main/java/com/certpractice/practice/FavoriteService.java` (FR-19)
-- [ ] T065 [US1] Implement active wrong-question updates and append-only failure events in `backend/java/src/main/java/com/certpractice/practice/WrongQuestionService.java` (FR-20～21)
-- [ ] T066 [US1] Implement practice session, answer, submit and self-assessment endpoints in `backend/java/src/main/java/com/certpractice/practice/PracticeController.java`
-- [ ] T067 [US1] Implement record, favorite and wrong-question endpoints in `backend/java/src/main/java/com/certpractice/practice/LearningHistoryController.java`
-- [ ] T068 [US1] Record question publish, offline, import and draft deletion audit events in `backend/java/src/main/java/com/certpractice/question/QuestionAuditService.java`
-- [ ] T069 [P] [US1] Add deterministic P1 demo questions, answers, aliases, exercise history and wrong questions in `backend/java/src/main/resources/db/seed/R__demo_p1.sql`
-- [ ] T070 [P] [US1] Implement login, registration and logout pages in `frontend/src/app/pages/LoginPage.vue` and `frontend/src/app/pages/RegisterPage.vue`
-- [ ] T071 [P] [US1] Implement account profile and password forms in `frontend/src/app/pages/AccountPage.vue`
-- [ ] T072 [P] [US1] Implement catalog browsing, keyword search and tag intersection filters in `frontend/src/app/pages/QuestionLibraryPage.vue`
-- [ ] T073 [P] [US1] Implement single-choice practice layout, answer editing and submit confirmation in `frontend/src/app/pages/PracticeSessionPage.vue`
-- [ ] T074 [P] [US1] Implement fill-question detail, reference display and per-item self-assessment in `frontend/src/app/pages/FillQuestionPage.vue`
-- [ ] T075 [P] [US1] Implement result and historical record detail views in `frontend/src/app/pages/PracticeResultPage.vue` and `frontend/src/app/pages/RecordDetailPage.vue`
-- [ ] T076 [P] [US1] Implement practice and self-test history filters in `frontend/src/app/pages/RecordListPage.vue`
-- [ ] T077 [P] [US1] Implement favorites list and idempotent toggle behavior in `frontend/src/app/pages/FavoritePage.vue`
-- [ ] T078 [P] [US1] Implement active wrong-question list and removal behavior in `frontend/src/app/pages/WrongQuestionPage.vue`
-- [ ] T079 [US1] Implement admin question list, filters and version history view in `frontend/src/admin/pages/QuestionListPage.vue`
-- [ ] T080 [US1] Implement admin single-choice and fill question editors in `frontend/src/admin/pages/QuestionEditorPage.vue`
-- [ ] T081 [US1] Implement review, publish, offline and rejection actions in `frontend/src/admin/pages/QuestionReviewPage.vue`
-- [ ] T082 [US1] Implement import upload, validation preview and confirmation in `frontend/src/admin/pages/QuestionImportPage.vue`
-- [ ] T083 [US1] Implement admin route definitions and role-aware navigation in `frontend/src/admin/router.ts` and `frontend/src/admin/layout/AdminLayout.vue`
-- [ ] T084 [US1] Generate and wire typed P1 API models in `frontend/src/features/api/types.ts` and `frontend/src/features/practice/api.ts`
-- [ ] T085 [US1] Add responsive breakpoints for core P1 pages in `frontend/src/styles/responsive.css`
-- [ ] T086 [US1] Complete P1 backend integration fixtures and transaction assertions in `backend/java/src/test/java/com/certpractice/practice/PracticeIntegrationTest.java`
-- [ ] T087 [US1] Implement the full P1 browser journey in `frontend/tests/e2e/p1-core-flow.spec.ts`
-- [ ] T088 [US1] Record P1 query-count and response-time baselines and detect material regressions without enforcing unconfirmed thresholds in `backend/java/src/test/java/com/certpractice/practice/PracticePerformanceTest.java`
-- [ ] T089 [US1] Add answer-redaction assertions for logs and problem responses in `backend/java/src/test/java/com/certpractice/security/P1RedactionTest.java`
-- [ ] T090 [US1] Update P1 execution notes and commands in `backend/java/README.md`, `frontend/README.md` and `backend/python/README.md`
-- [ ] T091 [US1] Add the immutable-version historical replay E2E journey in `frontend/tests/e2e/p1-version-history.spec.ts`
+- [X] T049 [US1] Implement registration, login, logout, password change and account anonymization with an ADMIN self-deletion guard in `backend/java/src/main/java/com/certpractice/identity/IdentityService.java` (FR-01～04)
+- [X] T050 [US1] Implement authentication and profile endpoints in `backend/java/src/main/java/com/certpractice/identity/IdentityController.java` and `backend/java/src/main/java/com/certpractice/identity/ProfileController.java`
+- [X] T051 [P] [US1] Implement catalog tree and tag queries in `backend/java/src/main/java/com/certpractice/catalog/CatalogService.java` and `CatalogController.java`
+- [X] T052 [P] [US1] Implement safe keyword and multi-tag search in `backend/java/src/main/java/com/certpractice/question/QuestionSearchService.java` (FR-05～06)
+- [X] T053 [US1] Implement draft creation, cloning and immutable version validation in `backend/java/src/main/java/com/certpractice/question/QuestionAuthoringService.java` (FR-07～09)
+- [X] T054 [US1] Implement review, publish, offline and transactional version pointer switching in `backend/java/src/main/java/com/certpractice/question/QuestionLifecycleService.java` (FR-08～10)
+- [X] T055 [US1] Implement admin question and version endpoints in `backend/java/src/main/java/com/certpractice/question/AdminQuestionController.java`
+- [X] T056 [US1] Add failing import validation tests and implement CSV/XLSX parsing, schema validation, alias checks and duplicate detection in `backend/java/src/test/java/com/certpractice/question/QuestionImportIntegrationTest.java` and `backend/java/src/main/java/com/certpractice/question/QuestionImportService.java` (FR-11、AC-13)
+- [X] T057 [US1] Implement import preview and confirmation endpoints in `backend/java/src/main/java/com/certpractice/question/QuestionImportController.java`
+- [X] T058 [US1] Implement weighted selection, bucket quotas, difficulty targets and shortage fallback in `backend/java/src/main/java/com/certpractice/practice/QuestionSelectionService.java` (FR-13)
+- [X] T059 [US1] Implement session creation, safe loading and answer upsert in `backend/java/src/main/java/com/certpractice/practice/PracticeSessionService.java` (FR-14)
+- [X] T060 [US1] Implement locked submission, grading and idempotent replay in `backend/java/src/main/java/com/certpractice/practice/PracticeSubmissionService.java` (FR-15)
+- [X] T061 [US1] Implement fill normalization, alias matching and per-item self-assessment state transitions in `backend/java/src/main/java/com/certpractice/practice/FillAssessmentService.java` (FR-16～18)
+- [X] T062 [US1] Implement answer-safe and result DTO mappers in `backend/java/src/main/java/com/certpractice/practice/PracticeDtoMapper.java`
+- [X] T063 [US1] Implement practice record list and version-preserving detail queries in `backend/java/src/main/java/com/certpractice/practice/PracticeRecordService.java`
+- [X] T064 [US1] Implement idempotent favorite add/remove and listing in `backend/java/src/main/java/com/certpractice/practice/FavoriteService.java` (FR-19)
+- [X] T065 [US1] Implement active wrong-question updates and append-only failure events in `backend/java/src/main/java/com/certpractice/practice/WrongQuestionService.java` (FR-20～21)
+- [X] T066 [US1] Implement practice session, answer, submit and self-assessment endpoints in `backend/java/src/main/java/com/certpractice/practice/PracticeController.java`
+- [X] T067 [US1] Implement record, favorite and wrong-question endpoints in `backend/java/src/main/java/com/certpractice/practice/LearningHistoryController.java`
+- [X] T068 [US1] Record question publish, offline, import and draft deletion audit events in `backend/java/src/main/java/com/certpractice/question/QuestionAuditService.java`
+- [X] T069 [P] [US1] Add deterministic P1 demo questions, answers, aliases, exercise history and wrong questions in `backend/java/src/main/resources/db/seed/R__demo_p1.sql`
+- [X] T070 [P] [US1] Implement login, registration and logout pages in `frontend/src/app/pages/LoginPage.vue` and `frontend/src/app/pages/RegisterPage.vue`
+- [X] T071 [P] [US1] Implement account profile and password forms in `frontend/src/app/pages/AccountPage.vue`
+- [X] T072 [P] [US1] Implement catalog browsing, keyword search and tag intersection filters in `frontend/src/app/pages/QuestionLibraryPage.vue`
+- [X] T073 [P] [US1] Implement single-choice practice layout, answer editing and submit confirmation in `frontend/src/app/pages/PracticeSessionPage.vue`
+- [X] T074 [P] [US1] Implement fill-question detail, reference display and per-item self-assessment in `frontend/src/app/pages/FillQuestionPage.vue`
+- [X] T075 [P] [US1] Implement result and historical record detail views in `frontend/src/app/pages/PracticeResultPage.vue` and `frontend/src/app/pages/RecordDetailPage.vue`
+- [X] T076 [P] [US1] Implement practice and self-test history filters in `frontend/src/app/pages/RecordListPage.vue`
+- [X] T077 [P] [US1] Implement favorites list and idempotent toggle behavior in `frontend/src/app/pages/FavoritePage.vue`
+- [X] T078 [P] [US1] Implement active wrong-question list and removal behavior in `frontend/src/app/pages/WrongQuestionPage.vue`
+- [X] T079 [US1] Implement admin question list, filters and version history view in `frontend/src/admin/pages/QuestionListPage.vue`
+- [X] T080 [US1] Implement admin single-choice and fill question editors in `frontend/src/admin/pages/QuestionEditorPage.vue`
+- [X] T081 [US1] Implement review, publish, offline and rejection actions in `frontend/src/admin/pages/QuestionReviewPage.vue`
+- [X] T082 [US1] Implement import upload, validation preview and confirmation in `frontend/src/admin/pages/QuestionImportPage.vue`
+- [X] T083 [US1] Implement admin route definitions and role-aware navigation in `frontend/src/admin/router.ts` and `frontend/src/admin/layout/AdminLayout.vue`
+- [X] T084 [US1] Generate and wire typed P1 API models in `frontend/src/features/api/types.ts` and `frontend/src/features/practice/api.ts`
+- [X] T085 [US1] Add responsive breakpoints for core P1 pages in `frontend/src/styles/responsive.css`
+- [X] T086 [US1] Complete P1 backend integration fixtures and transaction assertions in `backend/java/src/test/java/com/certpractice/practice/PracticeIntegrationTest.java`
+- [X] T087 [US1] Implement the full P1 browser journey in `frontend/tests/e2e/p1-core-flow.spec.ts`
+- [X] T088 [US1] Record P1 query-count and response-time baselines and detect material regressions without enforcing unconfirmed thresholds in `backend/java/src/test/java/com/certpractice/practice/PracticePerformanceTest.java`
+- [X] T089 [US1] Add answer-redaction assertions for logs and problem responses in `backend/java/src/test/java/com/certpractice/security/P1RedactionTest.java`
+- [X] T090 [US1] Update P1 execution notes and commands in `backend/java/README.md`, `frontend/README.md` and `backend/python/README.md`
+- [X] T091 [US1] Add the immutable-version historical replay E2E journey in `frontend/tests/e2e/p1-version-history.spec.ts`
 
 **Checkpoint**: US1 可独立完成从题库到练习、自评、记录、收藏错题和管理题库的闭环；通过 AC-01～AC-07、AC-13、AC-14 的 P1 部分。
 
