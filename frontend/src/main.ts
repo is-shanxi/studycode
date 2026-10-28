@@ -6,6 +6,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import { router } from './router'
 import './styles/base.css'
+import './styles/responsive.css'
 
 const app = createApp(App)
 const pinia = createPinia()

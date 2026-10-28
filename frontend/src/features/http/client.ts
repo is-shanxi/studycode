@@ -92,10 +92,11 @@ export async function ensureCsrfToken(): Promise<string> {
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const method = (options.method ?? 'GET').toUpperCase()
   const headers = new Headers(options.headers)
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
   headers.set('Accept', 'application/json')
   headers.set('X-Trace-Id', nextTraceId())
 
-  if (options.body !== undefined) {
+  if (options.body !== undefined && !isFormData) {
     headers.set('Content-Type', 'application/json')
   }
   if (UNSAFE_METHODS.has(method)) {
@@ -106,7 +107,11 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     method,
     credentials: 'include',
     headers,
-    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    body: isFormData
+      ? (options.body as FormData)
+      : options.body === undefined
+        ? undefined
+        : JSON.stringify(options.body),
     signal: options.signal,
   })
 

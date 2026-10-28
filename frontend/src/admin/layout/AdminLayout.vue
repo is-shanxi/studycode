@@ -7,6 +7,9 @@ import { RouterLink, RouterView } from 'vue-router'
     <header class="admin-header">
       <RouterLink class="brand" to="/admin">考证刷题平台 · 管理端</RouterLink>
       <nav class="admin-nav" aria-label="管理导航">
+        <RouterLink to="/admin/questions">题库管理</RouterLink>
+        <RouterLink to="/admin/review">审核</RouterLink>
+        <RouterLink to="/admin/import">批量导入</RouterLink>
         <RouterLink to="/app">返回用户端</RouterLink>
       </nav>
     </header>
@@ -39,9 +42,20 @@ import { RouterLink, RouterView } from 'vue-router'
   text-decoration: none;
 }
 
+.admin-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 .admin-nav a {
   color: #dbeafe;
+  font-size: 0.9rem;
   text-decoration: none;
+}
+
+.admin-nav a:hover {
+  color: #ffffff;
 }
 
 .admin-main {

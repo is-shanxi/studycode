@@ -55,6 +55,15 @@ export const useSessionStore = defineStore('session', {
       await this.fetchCurrentUser()
     },
 
+    async register(payload: {
+      username: string
+      password: string
+      passwordConfirmation: string
+    }): Promise<void> {
+      await apiClient.post<SessionUser>('/auth/register', payload)
+      await this.login({ username: payload.username, password: payload.password })
+    },
+
     async logout(): Promise<void> {
       try {
         await apiClient.delete<void>('/auth/sessions/current')

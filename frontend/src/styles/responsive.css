@@ -1,0 +1,68 @@
+/*
+ * P1 responsive engineering baseline: desktop-first layouts must remain usable
+ * at 360 px, 768 px and 1280 px. Final product acceptance sizes are pending.
+ */
+@media (max-width: 960px) {
+  .split-layout,
+  .editor-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-main,
+  .admin-main {
+    padding: 1rem;
+  }
+
+  .app-header,
+  .admin-header,
+  .page-head {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .app-nav,
+  .admin-nav {
+    width: 100%;
+    gap: 0.6rem 1rem;
+  }
+
+  .submit-bar {
+    position: static;
+  }
+
+  .error-head,
+  .error-row {
+    grid-template-columns: 4rem 6rem minmax(0, 1fr);
+  }
+
+  .error-head span:last-child,
+  .error-row span:last-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-main,
+  .admin-main {
+    padding: 0.75rem;
+  }
+
+  .page {
+    width: 100%;
+  }
+
+  .filter-panel,
+  .filters {
+    grid-template-columns: 1fr;
+  }
+
+  .option-row {
+    grid-template-columns: 3.5rem minmax(0, 1fr);
+  }
+
+  h1 {
+    font-size: 1.35rem;
+  }
+}

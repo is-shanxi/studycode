@@ -1,4 +1,5 @@
 import { flushPromises, mount } from '@vue/test-utils'
+import ElementPlus from 'element-plus'
 import { createPinia, setActivePinia } from 'pinia'
 import { describe, expect, it } from 'vitest'
 import { createMemoryHistory, createRouter, type RouteRecordRaw } from 'vue-router'
@@ -28,7 +29,7 @@ async function mountAt(path: string) {
   setActivePinia(pinia)
   useSessionStore().status = 'anonymous'
 
-  const wrapper = mount(App, { global: { plugins: [pinia, router] } })
+  const wrapper = mount(App, { global: { plugins: [pinia, router, ElementPlus] } })
   await flushPromises()
   return wrapper
 }
@@ -43,6 +44,6 @@ describe('App shell', () => {
   it('renders the user home shell', async () => {
     const wrapper = await mountAt('/app')
 
-    expect(wrapper.text()).toContain('P1 基础闭环')
+    expect(wrapper.text()).toContain('P1 核心闭环')
   })
 })

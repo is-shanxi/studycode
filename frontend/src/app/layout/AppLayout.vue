@@ -19,8 +19,13 @@ async function signOut(): Promise<void> {
     <header class="app-header">
       <RouterLink class="brand" to="/app">考证刷题平台</RouterLink>
       <nav class="app-nav" aria-label="用户导航">
-        <span v-if="displayName" class="user-name">{{ displayName }}</span>
+        <RouterLink to="/app/library">题库</RouterLink>
+        <RouterLink to="/app/records">记录</RouterLink>
+        <RouterLink to="/app/favorites">收藏</RouterLink>
+        <RouterLink to="/app/wrong-questions">错题</RouterLink>
+        <RouterLink to="/app/account">个人中心</RouterLink>
         <RouterLink v-if="session.isAdmin" to="/admin">管理端</RouterLink>
+        <span v-if="displayName" class="user-name">{{ displayName }}</span>
         <button class="link-button" type="button" @click="signOut">退出</button>
       </nav>
     </header>
