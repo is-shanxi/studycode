@@ -2,10 +2,18 @@ import { apiClient } from '@/features/http/client'
 import type {
   AdminQuestionDetail,
   AdminQuestionSummary,
+  AdminUserView,
+  AnnouncementResponse,
+  AuditLogView,
   CreateQuestionPayload,
+  DashboardView,
   ImportBatchView,
+  ModerationReportView,
   PageResponse,
   QuestionStatusResponse,
+  ResetPasswordResponse,
+  ResolveReportPayload,
+  ResolveReportResponse,
   UpdateDraftPayload,
 } from '@/features/api/types'
 
@@ -109,4 +117,69 @@ export function confirmImport(batchId: string): Promise<ImportBatchView> {
 
 export function cancelImport(batchId: string): Promise<void> {
   return apiClient.delete<void>(`/admin/question-imports/${batchId}`)
+}
+
+export function searchUsers(params: {
+  keyword?: string
+  status?: string
+  page?: number
+  size?: number
+}): Promise<PageResponse<AdminUserView>> {
+  return apiClient.get<PageResponse<AdminUserView>>(
+    `/admin/users${queryString(params as Record<string, unknown>)}`,
+  )
+}
+
+export function disableUser(userId: string): Promise<AdminUserView> {
+  return apiClient.post<AdminUserView>(`/admin/users/${userId}/disable`)
+}
+
+export function enableUser(userId: string): Promise<AdminUserView> {
+  return apiClient.post<AdminUserView>(`/admin/users/${userId}/enable`)
+}
+
+export function resetUserPassword(userId: string): Promise<ResetPasswordResponse> {
+  return apiClient.post<ResetPasswordResponse>(`/admin/users/${userId}/reset-password`)
+}
+
+export function listModerationReports(params: {
+  source?: string
+  status?: string
+  page?: number
+  size?: number
+}): Promise<PageResponse<ModerationReportView>> {
+  return apiClient.get<PageResponse<ModerationReportView>>(
+    `/admin/reports${queryString(params as Record<string, unknown>)}`,
+  )
+}
+
+export function resolveModerationReport(
+  reportId: string,
+  payload: ResolveReportPayload,
+): Promise<ResolveReportResponse> {
+  return apiClient.post<ResolveReportResponse>(`/admin/reports/${reportId}/resolve`, payload)
+}
+
+export function getDashboard(): Promise<DashboardView> {
+  return apiClient.get<DashboardView>('/admin/dashboard')
+}
+
+export function searchAuditLogs(params: {
+  actorUserId?: string
+  action?: string
+  targetType?: string
+  outcome?: string
+  page?: number
+  size?: number
+}): Promise<PageResponse<AuditLogView>> {
+  return apiClient.get<PageResponse<AuditLogView>>(
+    `/admin/audit-logs${queryString(params as Record<string, unknown>)}`,
+  )
+}
+
+export function sendAnnouncement(payload: {
+  title: string
+  body: string
+}): Promise<AnnouncementResponse> {
+  return apiClient.post<AnnouncementResponse>('/admin/notifications/announcements', payload)
 }

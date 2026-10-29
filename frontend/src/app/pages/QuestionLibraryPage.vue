@@ -229,6 +229,18 @@ onMounted(async () => {
       </div>
       <p class="stem">{{ question.stem }}</p>
       <div class="card-actions">
+        <el-button
+          text
+          type="primary"
+          @click="
+            router.push({
+              name: 'app-discussions',
+              params: { questionId: question.questionId },
+            })
+          "
+        >
+          讨论
+        </el-button>
         <el-button text type="primary" @click="toggleFavorite(question.questionId)">
           {{ favorites.has(question.questionId) ? '取消收藏' : '收藏' }}
         </el-button>

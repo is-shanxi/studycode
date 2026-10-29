@@ -29,6 +29,21 @@ export const appRoutes: RouteRecordRaw[] = [
         component: () => import('@/app/pages/QuestionLibraryPage.vue'),
       },
       {
+        path: 'questions/:questionId/discussions',
+        name: 'app-discussions',
+        component: () => import('@/app/pages/DiscussionListPage.vue'),
+      },
+      {
+        path: 'discussions/:postId',
+        name: 'app-discussion-detail',
+        component: () => import('@/app/pages/DiscussionDetailPage.vue'),
+      },
+      {
+        path: 'notifications',
+        name: 'app-notifications',
+        component: () => import('@/app/pages/NotificationPage.vue'),
+      },
+      {
         path: 'practice/:sessionId',
         name: 'app-practice',
         component: () => import('@/app/pages/PracticeSessionPage.vue'),
