@@ -167,37 +167,37 @@
 
 ### Tests for User Story 2
 
-- [ ] T092 [P] [US2] Add failing integration tests for version-bound discussions and one-level comments in `backend/java/src/test/java/com/certpractice/community/DiscussionIntegrationTest.java` (AC-12)
-- [ ] T093 [P] [US2] Add failing tests for moderation, correction reports and audit entries in `backend/java/src/test/java/com/certpractice/community/ModerationIntegrationTest.java` (AC-12)
-- [ ] T094 [P] [US2] Add failing tests for notification creation and read state in `backend/java/src/test/java/com/certpractice/notification/NotificationIntegrationTest.java` (AC-12)
-- [ ] T095 [P] [US2] Add failing Playwright journeys for discussion, report, notification and admin moderation in `frontend/tests/e2e/p2-community.spec.ts`
+- [X] T092 [P] [US2] Add failing integration tests for version-bound discussions and one-level comments in `backend/java/src/test/java/com/certpractice/community/DiscussionIntegrationTest.java` (AC-12)
+- [X] T093 [P] [US2] Add failing tests for moderation, correction reports and audit entries in `backend/java/src/test/java/com/certpractice/community/ModerationIntegrationTest.java` (AC-12)
+- [X] T094 [P] [US2] Add failing tests for notification creation and read state in `backend/java/src/test/java/com/certpractice/notification/NotificationIntegrationTest.java` (AC-12)
+- [X] T095 [P] [US2] Add failing Playwright journeys for discussion, report, notification and admin moderation in `frontend/tests/e2e/p2-community.spec.ts`
 
 ### Implementation for User Story 2
 
-- [ ] T096 [US2] Implement version-bound discussion creation and listing in `backend/java/src/main/java/com/certpractice/community/DiscussionService.java` (FR-27)
-- [ ] T097 [US2] Enforce question access and in-progress discussion suppression in `backend/java/src/main/java/com/certpractice/community/DiscussionAccessService.java`
-- [ ] T098 [US2] Implement one-level comments, quote references and content filtering in `backend/java/src/main/java/com/certpractice/community/CommentService.java` (FR-28)
-- [ ] T099 [US2] Implement question correction reports and report state transitions in `backend/java/src/main/java/com/certpractice/community/CorrectionReportService.java` (FR-12)
-- [ ] T100 [US2] Implement content reports, admin hiding/removal and audit records in `backend/java/src/main/java/com/certpractice/community/ModerationService.java` (FR-28、36)
-- [ ] T101 [US2] Implement public discussion and comment endpoints in `backend/java/src/main/java/com/certpractice/community/DiscussionController.java`
-- [ ] T102 [US2] Implement correction and content report endpoints in `backend/java/src/main/java/com/certpractice/community/ReportController.java`
-- [ ] T103 [US2] Implement transactional notification creation for replies, moderation and announcements in `backend/java/src/main/java/com/certpractice/notification/NotificationService.java` (FR-29)
-- [ ] T104 [US2] Implement notification list, read and read-all endpoints in `backend/java/src/main/java/com/certpractice/notification/NotificationController.java`
-- [ ] T105 [US2] Implement admin user query, disable, enable and one-time password reset in `backend/java/src/main/java/com/certpractice/admin/AdminUserService.java` (FR-03)
-- [ ] T106 [US2] Implement admin report query and resolution endpoints in `backend/java/src/main/java/com/certpractice/admin/AdminModerationController.java`
-- [ ] T107 [US2] Implement dashboard aggregate queries without a BI store in `backend/java/src/main/java/com/certpractice/admin/DashboardService.java` (FR-35)
-- [ ] T108 [US2] Implement append-only audit query and filters in `backend/java/src/main/java/com/certpractice/admin/AuditQueryService.java` (FR-36)
-- [ ] T109 [US2] Expose admin user, dashboard, report and audit endpoints in `backend/java/src/main/java/com/certpractice/admin/AdminOperationsController.java`
-- [ ] T110 [P] [US2] Implement discussion list and detail pages with version labels in `frontend/src/app/pages/DiscussionListPage.vue` and `frontend/src/app/pages/DiscussionDetailPage.vue`
-- [ ] T111 [P] [US2] Implement post and one-level reply forms in `frontend/src/app/components/DiscussionComposer.vue` and `frontend/src/app/components/CommentThread.vue`
-- [ ] T112 [P] [US2] Implement report and correction dialogs in `frontend/src/app/components/ContentReportDialog.vue`
-- [ ] T113 [P] [US2] Implement the notification center with persistent read state in `frontend/src/app/pages/NotificationPage.vue`
-- [ ] T114 [US2] Implement admin user management UI in `frontend/src/admin/pages/UserManagementPage.vue`
-- [ ] T115 [US2] Implement admin moderation queue UI in `frontend/src/admin/pages/ModerationPage.vue`
-- [ ] T116 [US2] Implement the small operational dashboard in `frontend/src/admin/pages/DashboardPage.vue`
-- [ ] T117 [US2] Implement audit log query UI in `frontend/src/admin/pages/AuditLogPage.vue`
-- [ ] T118 [P] [US2] Add P2 demo discussions, notifications, reports and moderation records in `backend/java/src/main/resources/db/seed/R__demo_p2.sql`
-- [ ] T119 [US2] Complete the P2 browser journey in `frontend/tests/e2e/p2-community.spec.ts`
+- [X] T096 [US2] Implement version-bound discussion creation and listing in `backend/java/src/main/java/com/certpractice/community/DiscussionService.java` (FR-27)
+- [X] T097 [US2] Enforce question access and in-progress discussion suppression in `backend/java/src/main/java/com/certpractice/community/DiscussionAccessService.java`
+- [X] T098 [US2] Implement one-level comments, quote references and content filtering in `backend/java/src/main/java/com/certpractice/community/CommentService.java` (FR-28)
+- [X] T099 [US2] Implement question correction reports and report state transitions in `backend/java/src/main/java/com/certpractice/community/CorrectionReportService.java` (FR-12)
+- [X] T100 [US2] Implement content reports, admin hiding/removal and audit records in `backend/java/src/main/java/com/certpractice/community/ModerationService.java` (FR-28、36)
+- [X] T101 [US2] Implement public discussion and comment endpoints in `backend/java/src/main/java/com/certpractice/community/DiscussionController.java`
+- [X] T102 [US2] Implement correction and content report endpoints in `backend/java/src/main/java/com/certpractice/community/ReportController.java`
+- [X] T103 [US2] Implement transactional notification creation for replies, moderation and announcements in `backend/java/src/main/java/com/certpractice/notification/NotificationService.java` (FR-29)
+- [X] T104 [US2] Implement notification list, read and read-all endpoints in `backend/java/src/main/java/com/certpractice/notification/NotificationController.java`
+- [X] T105 [US2] Implement admin user query, disable, enable and one-time password reset in `backend/java/src/main/java/com/certpractice/admin/AdminUserService.java` (FR-03)
+- [X] T106 [US2] Implement admin report query and resolution endpoints in `backend/java/src/main/java/com/certpractice/admin/AdminModerationController.java`
+- [X] T107 [US2] Implement dashboard aggregate queries without a BI store in `backend/java/src/main/java/com/certpractice/admin/DashboardService.java` (FR-35)
+- [X] T108 [US2] Implement append-only audit query and filters in `backend/java/src/main/java/com/certpractice/admin/AuditQueryService.java` (FR-36)
+- [X] T109 [US2] Expose admin user, dashboard, report and audit endpoints in `backend/java/src/main/java/com/certpractice/admin/AdminOperationsController.java`
+- [X] T110 [P] [US2] Implement discussion list and detail pages with version labels in `frontend/src/app/pages/DiscussionListPage.vue` and `frontend/src/app/pages/DiscussionDetailPage.vue`
+- [X] T111 [P] [US2] Implement post and one-level reply forms in `frontend/src/app/components/DiscussionComposer.vue` and `frontend/src/app/components/CommentThread.vue`
+- [X] T112 [P] [US2] Implement report and correction dialogs in `frontend/src/app/components/ContentReportDialog.vue`
+- [X] T113 [P] [US2] Implement the notification center with persistent read state in `frontend/src/app/pages/NotificationPage.vue`
+- [X] T114 [US2] Implement admin user management UI in `frontend/src/admin/pages/UserManagementPage.vue`
+- [X] T115 [US2] Implement admin moderation queue UI in `frontend/src/admin/pages/ModerationPage.vue`
+- [X] T116 [US2] Implement the small operational dashboard in `frontend/src/admin/pages/DashboardPage.vue`
+- [X] T117 [US2] Implement audit log query UI in `frontend/src/admin/pages/AuditLogPage.vue`
+- [X] T118 [P] [US2] Add P2 demo discussions, notifications, reports and moderation records in `backend/java/src/main/resources/db/seed/R__demo_p2.sql`
+- [X] T119 [US2] Complete the P2 browser journey in `frontend/tests/e2e/p2-community.spec.ts`
 
 **Checkpoint**: US2 可独立使用种子题目完成社区、举报、通知、用户管理和审计验收；通过 AC-12 及 AC-01、AC-06、AC-14 的运营部分。
 
