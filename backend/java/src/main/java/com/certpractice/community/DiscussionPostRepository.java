@@ -16,5 +16,10 @@ public interface DiscussionPostRepository extends JpaRepository<DiscussionPost, 
 
     Page<DiscussionPost> findByQuestionIdOrderByCreatedAtDesc(UUID questionId, Pageable pageable);
 
+    Page<DiscussionPost> findByQuestionIdAndStatusOrderByCreatedAtDesc(
+            UUID questionId,
+            DiscussionPost.Status status,
+            Pageable pageable);
+
     Optional<DiscussionPost> findByIdAndStatus(UUID id, DiscussionPost.Status status);
 }
