@@ -44,6 +44,7 @@ describe('App shell', () => {
   it('renders the user home shell', async () => {
     const wrapper = await mountAt('/app')
 
-    expect(wrapper.text()).toContain('P1 核心闭环')
+    expect(wrapper.text()).toContain('学习工作台')
+    expect(wrapper.text()).toContain('站内通知')
   })
 })

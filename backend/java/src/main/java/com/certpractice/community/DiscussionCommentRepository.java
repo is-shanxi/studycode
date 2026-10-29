@@ -14,4 +14,6 @@ public interface DiscussionCommentRepository extends JpaRepository<DiscussionCom
     List<DiscussionComment> findByPostIdOrderByCreatedAtAsc(UUID postId);
 
     List<DiscussionComment> findByParentCommentId(UUID parentCommentId);
+
+    long countByPostIdAndStatus(UUID postId, DiscussionPost.Status status);
 }

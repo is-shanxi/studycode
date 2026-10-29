@@ -8,11 +8,11 @@ const session = useSessionStore()
 
 <template>
   <section class="page">
-    <p class="eyebrow">P1 核心闭环</p>
+    <p class="eyebrow">学习工作台</p>
     <h1>欢迎回来，{{ session.user?.nickname ?? session.user?.username ?? '同学' }}</h1>
     <p class="lead">
       从题库筛选开始一次 10
-      题练习，提交后查看结果；填空题需要逐题自评，错题和收藏会自动进入学习记录。
+      题练习，提交后查看结果；填空题需要逐题自评。题目讨论按版本保留，站内通知会汇总回复和治理结果。
     </p>
 
     <div class="quick-grid">
@@ -31,6 +31,14 @@ const session = useSessionStore()
       <RouterLink class="quick-card" to="/app/wrong-questions">
         <span class="quick-title">错题集</span>
         <span class="quick-desc">失败自动加入，可手动移出</span>
+      </RouterLink>
+      <RouterLink class="quick-card" to="/app/library">
+        <span class="quick-title">讨论与题解</span>
+        <span class="quick-desc">在题目详情中查看或发起版本绑定的讨论</span>
+      </RouterLink>
+      <RouterLink class="quick-card" to="/app/notifications">
+        <span class="quick-title">站内通知</span>
+        <span class="quick-desc">回复、举报处理结果和系统公告</span>
       </RouterLink>
     </div>
 

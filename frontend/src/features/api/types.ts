@@ -360,3 +360,161 @@ export interface ImportBatchView {
   confirmedAt?: string
   errors: ImportErrorView[]
 }
+
+export type ReportStatus = 'OPEN' | 'PROCESSING' | 'RESOLVED' | 'REJECTED'
+export type ReportSource = 'CONTENT' | 'CORRECTION'
+
+export interface DiscussionPostSummary {
+  postId: string
+  questionId: string
+  questionVersionId: string
+  versionNo: number
+  versionCurrent: boolean
+  title: string
+  bodyPreview?: string
+  authorUserId: string
+  authorName: string
+  status: string
+  commentCount: number
+  createdAt: string
+}
+
+export interface DiscussionCommentView {
+  commentId: string
+  parentCommentId?: string
+  quotedCommentId?: string
+  quotedPreview?: string
+  authorUserId: string
+  authorName: string
+  body: string
+  status: string
+  createdAt: string
+}
+
+export interface DiscussionPostDetail {
+  postId: string
+  questionId: string
+  questionVersionId: string
+  versionNo: number
+  versionCurrent: boolean
+  title: string
+  body: string
+  authorUserId: string
+  authorName: string
+  status: string
+  createdAt: string
+  comments: DiscussionCommentView[]
+}
+
+export interface CreateDiscussionPayload {
+  questionVersionId: string
+  title: string
+  body: string
+}
+
+export interface CreateCommentPayload {
+  parentCommentId?: string | null
+  quotedCommentId?: string | null
+  body: string
+}
+
+export interface ReportCreated {
+  reportId: string
+  status: string
+}
+
+export interface NotificationView {
+  notificationId: string
+  type: string
+  title: string
+  body: string
+  payload?: string
+  readAt?: string
+  createdAt: string
+}
+
+export interface MarkAllReadResponse {
+  updated: number
+}
+
+export interface AnnouncementResponse {
+  recipientCount: number
+}
+
+export interface AdminUserView {
+  userId: string
+  username: string
+  nickname?: string
+  status: 'ACTIVE' | 'DISABLED' | 'DELETED_ANONYMIZED'
+  roles: Role[]
+  createdAt: string
+}
+
+export interface ResetPasswordResponse {
+  userId: string
+  username: string
+  temporaryPassword: string
+}
+
+export interface ModerationReportView {
+  reportId: string
+  source: ReportSource
+  targetType: string
+  targetId: string
+  questionVersionId?: string
+  reason: string
+  status: ReportStatus
+  reporterUserId: string
+  reporterName: string
+  handledBy?: string
+  handledAt?: string
+  createdAt: string
+}
+
+export interface ResolveReportPayload {
+  source: ReportSource
+  resolution: 'PROCESSING' | 'RESOLVED' | 'REJECTED'
+  moderationAction?: 'HIDE' | 'REMOVE'
+  note?: string
+}
+
+export interface ResolveReportResponse {
+  reportId: string
+  source: ReportSource
+  status: ReportStatus
+  targetStatus?: string
+}
+
+export interface DashboardView {
+  activeUsers: number
+  activeUsersLast7Days: number
+  totalPracticeSessions: number
+  completedPracticeSessions: number
+  practiceCompletionRate: number
+  objectiveGradedItems: number
+  objectiveFailedItems: number
+  questionErrorRate: number
+  fillAnswers: number
+  autoMatchedAnswers: number
+  autoMatchRate: number
+  selfAssessedItems: number
+  selfPassedItems: number
+  selfFailedItems: number
+  selfAssessmentPassRate: number
+  pendingReviewVersions: number
+  openReports: number
+  aiRequestCount: number
+  aiCost: number
+}
+
+export interface AuditLogView {
+  auditLogId: string
+  actorUserId: string
+  action: string
+  targetType: string
+  targetId?: string
+  outcome: 'SUCCESS' | 'FAILED' | 'REJECTED'
+  summary?: string
+  traceId?: string
+  createdAt: string
+}

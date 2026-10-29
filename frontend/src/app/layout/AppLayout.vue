@@ -23,6 +23,7 @@ async function signOut(): Promise<void> {
         <RouterLink to="/app/records">记录</RouterLink>
         <RouterLink to="/app/favorites">收藏</RouterLink>
         <RouterLink to="/app/wrong-questions">错题</RouterLink>
+        <RouterLink to="/app/notifications">通知</RouterLink>
         <RouterLink to="/app/account">个人中心</RouterLink>
         <RouterLink v-if="session.isAdmin" to="/admin">管理端</RouterLink>
         <span v-if="displayName" class="user-name">{{ displayName }}</span>

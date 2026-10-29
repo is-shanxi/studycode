@@ -12,6 +12,26 @@ export const adminRoutes: RouteRecordRaw[] = [
         component: () => import('@/admin/pages/AdminHomePage.vue'),
       },
       {
+        path: 'dashboard',
+        name: 'admin-dashboard',
+        component: () => import('@/admin/pages/DashboardPage.vue'),
+      },
+      {
+        path: 'users',
+        name: 'admin-users',
+        component: () => import('@/admin/pages/UserManagementPage.vue'),
+      },
+      {
+        path: 'moderation',
+        name: 'admin-moderation',
+        component: () => import('@/admin/pages/ModerationPage.vue'),
+      },
+      {
+        path: 'audit-logs',
+        name: 'admin-audit-logs',
+        component: () => import('@/admin/pages/AuditLogPage.vue'),
+      },
+      {
         path: 'questions',
         name: 'admin-questions',
         component: () => import('@/admin/pages/QuestionListPage.vue'),
