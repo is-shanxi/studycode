@@ -1,6 +1,5 @@
 package com.certpractice.admin;
 
-import java.security.SecureRandom;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -15,6 +14,7 @@ import com.certpractice.identity.UserRole;
 import com.certpractice.identity.UserRoleRepository;
 import com.certpractice.shared.error.ApiException;
 import com.certpractice.shared.error.ErrorCode;
+import com.certpractice.shared.web.Guard;
 import com.certpractice.shared.web.PageQuery;
 import com.certpractice.shared.web.PageResponse;
 import org.springframework.data.domain.Page;
@@ -24,23 +24,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Administrator user management: query, disable, enable and one-time password
- * reset. Every mutation is audited; the reset password is never persisted or
- * logged in clear text.
+ * Administrator user management: query, disable, enable and administrator-
+ * provided password reset. Every mutation is audited; passwords are only
+ * hashed and are never returned in responses, audit summaries or logs.
  */
 @Service
 public class AdminUserService {
-
-    private static final char[] TEMP_PASSWORD_CHARS =
-            "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$".toCharArray();
-    private static final int TEMP_PASSWORD_LENGTH = 16;
 
     private final AppUserRepository users;
     private final UserRoleRepository userRoles;
     private final PasswordEncoder passwordEncoder;
     private final JdbcTemplate jdbcTemplate;
     private final AdminAuditService auditService;
-    private final SecureRandom random = new SecureRandom();
 
     public AdminUserService(
             final AppUserRepository users,
@@ -114,13 +109,17 @@ public class AdminUserService {
     }
 
     @Transactional
-    public AdminDtos.ResetPasswordResponse resetPassword(final UUID adminUserId, final UUID userId) {
+    public void resetPassword(
+            final UUID adminUserId,
+            final UUID userId,
+            final AdminDtos.ResetPasswordRequest request) {
         AppUser user = requireUser(userId);
         if (user.getStatus() == AppUser.Status.DELETED_ANONYMIZED) {
             throw new ApiException(ErrorCode.STATE_CONFLICT, "Deleted accounts cannot be reset");
         }
-        String temporaryPassword = generateTemporaryPassword();
-        user.setPasswordHash(passwordEncoder.encode(temporaryPassword));
+        Guard.require(request.newPassword().equals(request.newPasswordConfirmation()),
+                ErrorCode.VALIDATION_FAILED, "password confirmation does not match");
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         users.save(user);
         invalidateSessions(user.getUsername());
         auditService.record(
@@ -129,9 +128,7 @@ public class AdminUserService {
                 "APP_USER",
                 userId,
                 AdminAuditLog.Outcome.SUCCESS,
-                Map.of("username", user.getUsername(), "delivery", "ONE_TIME_DISPLAY"));
-        return new AdminDtos.ResetPasswordResponse(
-                user.getId(), user.getUsername(), temporaryPassword);
+                Map.of("username", user.getUsername(), "delivery", "ADMIN_PROVIDED"));
     }
 
     private AppUser requireUser(final UUID userId) {
@@ -167,13 +164,5 @@ public class AdminUserService {
 
     private void invalidateSessions(final String principalName) {
         jdbcTemplate.update("DELETE FROM SPRING_SESSION WHERE PRINCIPAL_NAME = ?", principalName);
-    }
-
-    private String generateTemporaryPassword() {
-        StringBuilder password = new StringBuilder(TEMP_PASSWORD_LENGTH);
-        for (int index = 0; index < TEMP_PASSWORD_LENGTH; index++) {
-            password.append(TEMP_PASSWORD_CHARS[random.nextInt(TEMP_PASSWORD_CHARS.length)]);
-        }
-        return password.toString();
     }
 }

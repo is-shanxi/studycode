@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.is;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -29,7 +30,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.web.servlet.MvcResult;
 
 class AdminOperationsIntegrationTest extends P2TestSupport {
 
@@ -101,19 +101,20 @@ class AdminOperationsIntegrationTest extends P2TestSupport {
     }
 
     @Test
-    void passwordResetReturnsAOneTimeSecretAndInvalidatesTheOldPassword() throws Exception {
+    void passwordResetUsesAdministratorProvidedPasswordAndInvalidatesTheOldPassword() throws Exception {
         String username = uniqueUsername("reset");
         UUID userId = createUser(username, ORIGINAL_PASSWORD);
-        int auditCountBefore = auditLogs.findAll().size();
+        String newPassword = "Reset@456";
 
-        MvcResult reset = mockMvc.perform(post("/api/v1/admin/users/{userId}/reset-password", userId)
+        mockMvc.perform(post("/api/v1/admin/users/{userId}/reset-password", userId)
                         .with(admin())
-                        .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId").value(userId.toString()))
-                .andExpect(jsonPath("$.temporaryPassword").isNotEmpty())
-                .andReturn();
-        String temporaryPassword = readJson(reset).get("temporaryPassword").asText();
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "newPassword", newPassword,
+                                "newPasswordConfirmation", newPassword))))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
 
         mockMvc.perform(post("/api/v1/auth/sessions")
                         .with(csrf())
@@ -128,16 +129,42 @@ class AdminOperationsIntegrationTest extends P2TestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "username", username,
-                                "password", temporaryPassword))))
+                                "password", newPassword))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value(username));
 
         AdminAuditLog audit = auditLogs.findAll().stream()
-                .skip(auditCountBefore)
-                .filter(log -> "USER_PASSWORD_RESET".equals(log.getAction()))
+                .filter(log -> "USER_PASSWORD_RESET".equals(log.getAction())
+                        && userId.equals(log.getTargetId()))
                 .findFirst()
                 .orElseThrow();
-        org.junit.jupiter.api.Assertions.assertFalse(audit.getSummaryJson().contains(temporaryPassword));
+        org.junit.jupiter.api.Assertions.assertFalse(audit.getSummaryJson().contains(newPassword));
+    }
+
+    @Test
+    void passwordResetRejectsWeakOrMismatchedPasswords() throws Exception {
+        String username = uniqueUsername("resetvalidation");
+        UUID userId = createUser(username, ORIGINAL_PASSWORD);
+
+        mockMvc.perform(post("/api/v1/admin/users/{userId}/reset-password", userId)
+                        .with(admin())
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "newPassword", "short",
+                                "newPasswordConfirmation", "short"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+
+        mockMvc.perform(post("/api/v1/admin/users/{userId}/reset-password", userId)
+                        .with(admin())
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "newPassword", "ValidPass@123",
+                                "newPasswordConfirmation", "Different@123"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
     }
 
     @Test

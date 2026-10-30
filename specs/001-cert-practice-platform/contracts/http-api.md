@@ -433,7 +433,7 @@ difficulty, type, page, size
 | GET | `/admin/users` | 查询用户 |
 | POST | `/admin/users/{id}/disable` | 禁用用户并失效会话 |
 | POST | `/admin/users/{id}/enable` | 启用用户 |
-| POST | `/admin/users/{id}/reset-password` | 生成一次显示的重置结果，不返回明文存储 |
+| POST | `/admin/users/{id}/reset-password` | 管理员提交新的临时密码；返回 `204`，响应不返回密码 |
 | GET | `/admin/reports` | 举报和题目报错 |
 | POST | `/admin/reports/{id}/resolve` | 处理举报 |
 | GET | `/admin/dashboard` | 活跃、完成率、匹配率、自评率、错误率、审核量、AI 成本 |
@@ -444,6 +444,17 @@ difficulty, type, page, size
 | GET/PUT | `/admin/configs` | 抽题、AI 额度、规则配置，带版本控制 |
 
 管理接口不接受普通用户 Cookie 越权访问；公开注册不能创建管理员。
+
+重置密码请求：
+
+```json
+{
+  "newPassword": "至少满足配置长度和复杂度",
+  "newPasswordConfirmation": "..."
+}
+```
+
+服务端只保存密码哈希，成功响应为 `204 No Content`。密码不得出现在响应、日志或审计摘要中；管理员需通过安全渠道将临时密码转交用户。
 
 ## 10. Java 到 Python 内部契约
 
