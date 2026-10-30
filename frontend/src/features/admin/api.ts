@@ -11,7 +11,7 @@ import type {
   ModerationReportView,
   PageResponse,
   QuestionStatusResponse,
-  ResetPasswordResponse,
+  ResetPasswordPayload,
   ResolveReportPayload,
   ResolveReportResponse,
   UpdateDraftPayload,
@@ -138,8 +138,8 @@ export function enableUser(userId: string): Promise<AdminUserView> {
   return apiClient.post<AdminUserView>(`/admin/users/${userId}/enable`)
 }
 
-export function resetUserPassword(userId: string): Promise<ResetPasswordResponse> {
-  return apiClient.post<ResetPasswordResponse>(`/admin/users/${userId}/reset-password`)
+export function resetUserPassword(userId: string, payload: ResetPasswordPayload): Promise<void> {
+  return apiClient.post<void>(`/admin/users/${userId}/reset-password`, payload)
 }
 
 export function listModerationReports(params: {

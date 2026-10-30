@@ -68,9 +68,12 @@ public class AdminOperationsController {
     }
 
     @PostMapping("/users/{userId}/reset-password")
-    public AdminDtos.ResetPasswordResponse resetPassword(@PathVariable final UUID userId) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void resetPassword(
+            @PathVariable final UUID userId,
+            @Valid @RequestBody final AdminDtos.ResetPasswordRequest request) {
         currentUserService.requireAdmin();
-        return userService.resetPassword(currentUserService.requireUserId(), userId);
+        userService.resetPassword(currentUserService.requireUserId(), userId, request);
     }
 
     @GetMapping("/dashboard")

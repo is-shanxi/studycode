@@ -450,10 +450,9 @@ export interface AdminUserView {
   createdAt: string
 }
 
-export interface ResetPasswordResponse {
-  userId: string
-  username: string
-  temporaryPassword: string
+export interface ResetPasswordPayload {
+  newPassword: string
+  newPasswordConfirmation: string
 }
 
 export interface ModerationReportView {

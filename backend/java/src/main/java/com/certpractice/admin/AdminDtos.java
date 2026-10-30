@@ -5,9 +5,12 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 /**
  * Administrator-facing payloads. Passwords and password hashes are never part
- * of these views; a generated temporary password is returned exactly once.
+ * of response views; reset requests only carry the new password inward.
  */
 public final class AdminDtos {
 
@@ -23,10 +26,9 @@ public final class AdminDtos {
             Instant createdAt) {
     }
 
-    public record ResetPasswordResponse(
-            UUID userId,
-            String username,
-            String temporaryPassword) {
+    public record ResetPasswordRequest(
+            @NotBlank @Size(min = 8, max = 72) String newPassword,
+            @NotBlank @Size(min = 8, max = 72) String newPasswordConfirmation) {
     }
 
     public record DashboardView(
