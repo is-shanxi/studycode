@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 
-import type { AdminUserView, PageResponse, ResetPasswordResponse } from '@/features/api/types'
+import type { AdminUserView, PageResponse } from '@/features/api/types'
 import { disableUser, enableUser, resetUserPassword, searchUsers } from '@/features/admin/api'
 import { useSessionStore } from '@/features/auth/store'
 
@@ -12,8 +12,11 @@ const error = ref<string | null>(null)
 const notice = ref<string | null>(null)
 const filters = reactive({ keyword: '', status: '' })
 
-const resetResult = ref<ResetPasswordResponse | null>(null)
 const resetVisible = ref(false)
+const resetTarget = ref<AdminUserView | null>(null)
+const resetSubmitting = ref(false)
+const resetError = ref<string | null>(null)
+const resetForm = reactive({ newPassword: '', confirmation: '' })
 const actionUserId = ref<string | null>(null)
 
 async function load(page = 0): Promise<void> {
@@ -64,40 +67,48 @@ async function toggleStatus(user: AdminUserView): Promise<void> {
   }
 }
 
-async function resetPassword(user: AdminUserView): Promise<void> {
-  const confirmed = window.confirm(
-    `重置 ${user.username} 的密码会使其现有会话失效，临时密码只显示一次。确定继续吗？`,
-  )
-  if (!confirmed) {
-    return
-  }
-  actionUserId.value = user.userId
-  error.value = null
-  try {
-    resetResult.value = await resetUserPassword(user.userId)
-    resetVisible.value = true
-  } catch (caught) {
-    error.value = caught instanceof Error ? caught.message : '密码重置失败'
-  } finally {
-    actionUserId.value = null
-  }
+function openResetDialog(user: AdminUserView): void {
+  resetTarget.value = user
+  resetError.value = null
+  resetForm.newPassword = ''
+  resetForm.confirmation = ''
+  resetVisible.value = true
 }
 
-async function copyTemporaryPassword(): Promise<void> {
-  if (!resetResult.value) {
+async function submitReset(): Promise<void> {
+  if (!resetTarget.value) {
     return
   }
+  if (resetForm.newPassword.length < 8) {
+    resetError.value = '临时密码至少需要 8 个字符。'
+    return
+  }
+  if (resetForm.newPassword !== resetForm.confirmation) {
+    resetError.value = '两次输入的临时密码不一致。'
+    return
+  }
+  resetSubmitting.value = true
+  resetError.value = null
   try {
-    await navigator.clipboard.writeText(resetResult.value.temporaryPassword)
-    notice.value = '临时密码已复制到剪贴板。'
-  } catch {
-    notice.value = '无法自动复制，请手动选择临时密码。'
+    await resetUserPassword(resetTarget.value.userId, {
+      newPassword: resetForm.newPassword,
+      newPasswordConfirmation: resetForm.confirmation,
+    })
+    notice.value = '密码已重置，现有会话已失效；请通过安全渠道转交临时密码。'
+    closeResetDialog()
+  } catch (caught) {
+    resetError.value = caught instanceof Error ? caught.message : '密码重置失败'
+  } finally {
+    resetSubmitting.value = false
   }
 }
 
 function closeResetDialog(): void {
   resetVisible.value = false
-  resetResult.value = null
+  resetTarget.value = null
+  resetError.value = null
+  resetForm.newPassword = ''
+  resetForm.confirmation = ''
 }
 
 onMounted(() => {
@@ -111,7 +122,9 @@ onMounted(() => {
       <div>
         <p class="eyebrow">运营管理</p>
         <h1>用户管理</h1>
-        <p class="lead">禁用会立即失效该用户的现有会话；密码重置只显示一次。</p>
+        <p class="lead">
+          禁用会立即失效该用户的现有会话；密码重置由管理员设置临时密码，响应不返回密码。
+        </p>
       </div>
     </header>
 
@@ -197,8 +210,7 @@ onMounted(() => {
             v-if="row.status !== 'DELETED_ANONYMIZED'"
             text
             type="primary"
-            :loading="actionUserId === row.userId"
-            @click="resetPassword(row)"
+            @click="openResetDialog(row)"
           >
             重置密码
           </el-button>
@@ -218,20 +230,37 @@ onMounted(() => {
 
     <el-dialog
       v-model="resetVisible"
-      title="临时密码（仅显示一次）"
-      width="min(30rem, 92vw)"
+      title="重置密码"
+      width="min(32rem, 92vw)"
       @closed="closeResetDialog"
     >
-      <div v-if="resetResult" class="reset-body">
+      <div v-if="resetTarget" class="reset-body">
         <p>
-          用户 <strong>{{ resetResult.username }}</strong> 的密码已重置，请通过安全渠道转交。
-          关闭后无法再次查看。
+          为用户 <strong>{{ resetTarget.username }}</strong>
+          设置临时密码。重置后其现有会话立即失效，请通过安全渠道转交。
         </p>
-        <el-input :model-value="resetResult.temporaryPassword" readonly />
-        <el-button type="primary" @click="copyTemporaryPassword">复制临时密码</el-button>
+        <el-alert v-if="resetError" :title="resetError" type="error" show-icon :closable="false" />
+        <el-input
+          v-model="resetForm.newPassword"
+          type="password"
+          show-password
+          maxlength="72"
+          placeholder="新的临时密码（至少 8 个字符）"
+        />
+        <el-input
+          v-model="resetForm.confirmation"
+          type="password"
+          show-password
+          maxlength="72"
+          placeholder="再次输入临时密码"
+          @keyup.enter="submitReset"
+        />
       </div>
       <template #footer>
-        <el-button @click="closeResetDialog">我已记录，关闭</el-button>
+        <el-button @click="closeResetDialog">取消</el-button>
+        <el-button type="primary" :loading="resetSubmitting" @click="submitReset">
+          确认重置
+        </el-button>
       </template>
     </el-dialog>
   </section>
