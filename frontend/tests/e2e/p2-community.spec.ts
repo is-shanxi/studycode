@@ -121,3 +121,41 @@ test('the administrator dashboard, user list and audit query render P2 data', as
     page.locator('.el-table__row', { hasText: 'CONTENT_REPORT_RESOLVE' }).first(),
   ).toBeVisible()
 })
+
+test('an administrator sets a temporary password the user can sign in with', async ({
+  page,
+  browser,
+}) => {
+  const username = `reset${Date.now()}${Math.floor(Math.random() * 1000)}`
+  const originalPassword = 'Original@123'
+  const temporaryPassword = 'Reset@456'
+
+  await apiJson(page.request, 'POST', '/api/v1/auth/register', {
+    username,
+    password: originalPassword,
+    passwordConfirmation: originalPassword,
+  })
+  await apiLogin(page.request, 'admin', 'Admin@12345')
+
+  await page.goto('/admin/users')
+  await page.getByPlaceholder('用户名或昵称').fill(username)
+  await page.getByRole('button', { name: '搜索' }).click()
+
+  const row = page.locator('.el-table__row', { hasText: username })
+  await expect(row).toBeVisible()
+  await row.getByRole('button', { name: '重置密码' }).click()
+
+  const dialog = page.getByRole('dialog')
+  await dialog.getByPlaceholder('新的临时密码（至少 8 个字符）').fill(temporaryPassword)
+  await dialog.getByPlaceholder('再次输入临时密码').fill(temporaryPassword)
+  await dialog.getByRole('button', { name: '确认重置' }).click()
+
+  await expect(page.getByText(/密码已重置/)).toBeVisible()
+  await expect(page.getByText(temporaryPassword)).toHaveCount(0)
+
+  const userContext = await browser.newContext()
+  const userPage = await userContext.newPage()
+  const session = await apiLogin(userPage.request, username, temporaryPassword)
+  expect(session.username).toBe(username)
+  await userContext.close()
+})
