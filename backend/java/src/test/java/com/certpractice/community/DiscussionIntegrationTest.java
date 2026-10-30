@@ -71,6 +71,35 @@ class DiscussionIntegrationTest extends P2TestSupport {
     }
 
     @Test
+    void quotedRootCommentsMustStayWithinTheSelectedThread() throws Exception {
+        P1TestSupport.SubjectChapter catalog = createSubjectAndChapter();
+        P1TestSupport.QuestionRef question = createPublishedChoice(
+                catalog.subjectId(), catalog.chapterId(), "Quote thread validation", "A", null);
+        UUID authorId = registerUser();
+        UUID postId = createDiscussion(
+                authorId, question.questionId(), question.versionId(),
+                "引用校验", "引用根评论时也必须保持同一线程。");
+
+        UUID rootA = createComment(authorId, postId, null, null, "根评论 A");
+        UUID rootB = createComment(authorId, postId, null, null, "根评论 B");
+
+        Map<String, Object> crossRootPayload = new HashMap<>();
+        crossRootPayload.put("parentCommentId", rootA.toString());
+        crossRootPayload.put("quotedCommentId", rootB.toString());
+        crossRootPayload.put("body", "跨根引用应被拒绝");
+        mockMvc.perform(post("/api/v1/discussions/{postId}/comments", postId)
+                        .with(appUser(authorId, usernameFor(authorId)))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(crossRootPayload)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("STATE_CONFLICT"));
+
+        createComment(authorId, postId, rootB, rootB, "同线程引用根评论");
+        createComment(authorId, postId, null, rootB, "未指定 parent 时推导为根评论");
+    }
+
+    @Test
     void inProgressPracticeBlocksDiscussionAccessUntilSessionCompletes() throws Exception {
         P1TestSupport.SubjectChapter catalog = createSubjectAndChapter();
         P1TestSupport.QuestionRef question = createPublishedChoice(

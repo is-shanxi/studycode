@@ -68,12 +68,15 @@ public class CommentService {
                         ErrorCode.STATE_CONFLICT,
                         "Comments support only one level of replies");
             }
-            if (quoted != null
-                    && quoted.getParentCommentId() != null
-                    && !quoted.getParentCommentId().equals(parent.getId())) {
-                throw new ApiException(
-                        ErrorCode.STATE_CONFLICT,
-                        "Quoted comment does not belong to the selected thread");
+            if (quoted != null) {
+                UUID quotedThreadRootId = quoted.getParentCommentId() == null
+                        ? quoted.getId()
+                        : quoted.getParentCommentId();
+                if (!quotedThreadRootId.equals(parent.getId())) {
+                    throw new ApiException(
+                            ErrorCode.STATE_CONFLICT,
+                            "Quoted comment does not belong to the selected thread");
+                }
             }
         }
 
