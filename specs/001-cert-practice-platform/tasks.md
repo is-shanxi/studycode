@@ -259,7 +259,7 @@
 
 - [ ] T150 [P] Complete and validate OpenAPI 3.1 coverage for public and admin APIs in `speckit/specs/001-cert-practice-platform/contracts/openapi.yaml`
 - [ ] T151 [P] Run a full authorization, CSRF, session invalidation and answer-leak review across `backend/java/src/test/java/com/certpractice/security/`
-- [ ] T152 Review and tune PostgreSQL indexes and query plans for search, practice history and dashboards in `backend/java/src/main/resources/db/migration/V7__index_tuning.sql`
+- [ ] T152 Review and tune PostgreSQL indexes and query plans for search, practice history, dashboards and selection candidate counting in `backend/java/src/main/resources/db/migration/V7__index_tuning.sql`
 - [ ] T153 [P] Validate responsive engineering baselines at 360 px, 768 px and 1280 px in `frontend/tests/e2e/responsive.spec.ts` without treating them as final product acceptance until confirmed
 - [ ] T154 Review structured-log redaction and health checks in `backend/java/src/main/java/com/certpractice/shared/observability/` and `backend/python/app/api/health.py`
 - [ ] T155 Update architecture, operations and module ownership notes in `docs/技术设计文档.md` and `backend/java/README.md`
@@ -267,6 +267,26 @@
 - [ ] T157 Execute every applicable scenario in `quickstart.md` and record expected results in `speckit/specs/001-cert-practice-platform/quickstart.md`
 - [ ] T158 Remove unused placeholders and verify all configuration keys in `infra/env/.env.example` and `infra/compose.yaml`
 - [ ] T159 Complete the requirements-to-test traceability review against AC-01～AC-14 in `speckit/specs/001-cert-practice-platform/spec.md` and `frontend/tests/e2e/`
+
+---
+
+## Phase 7: 2026-10-31 冲突收敛与后续欠账
+
+**Purpose**: 记录 P3 前置修复与暂缓项，避免文档与实现再次分叉。
+
+- [X] T160 Add configurable question-selection bucket/difficulty weights and candidate cap in `backend/java/src/main/java/com/certpractice/practice/PracticeSelectionProperties.java` and `application.yml` (FR-13).
+- [X] T161 Lock the question identity row during publish/offline and add a concurrent-publish integration test in `backend/java/src/test/java/com/certpractice/question/QuestionPublishConcurrencyTest.java` (design §5.3/§11).
+- [X] T162 Align `SUBMITTED` semantics in the design document with the implemented state machine (design §7.3/§7.4).
+- [X] T163 Reject favorites and correction reports for unpublished/offline questions and cover them with integration tests (design §7.4/§10).
+- [X] T164 Record the 2026-10-31 module-boundary and BCrypt decisions in the design document (design §3/§5.2/§8.1).
+- [ ] T165 [P] Add administrator catalog/subject/chapter/tag maintenance APIs and pages in `backend/java/src/main/java/com/certpractice/catalog/` and `frontend/src/admin/pages/` (FR-05; deferred until after P3).
+- [ ] T166 [P] Complete security and operations follow-ups: login failure throttling/lockout, CSP, and explicit multipart upload limits (design §10).
+- [X] T167 Move `需求规约.md` and `技术设计文档.md` into `docs/` and update relative links in `specs/001-cert-practice-platform/plan.md`, `spec.md`, and the design document.
+- [X] T168 Add Java unit tests for `TextNormalizer` and selection quota math, and align the design document test strategy (design §14).
+- [X] T169 Use server `allowedActions` for submission readiness and send `Idempotency-Key` on self-assessment, with frontend unit tests.
+- [X] T170 Align the design document with actual frontend structure, correction-report module ownership, Pinia scope, import-failure handling, and candidate-counting wording.
+- [ ] T171 [P] Add a global unread notification badge via a Pinia store and unread-count refresh (future UX enhancement).
+- [ ] T172 [P] Batch practice session/result DTO queries to remove per-item N+1 lookups in `backend/java/src/main/java/com/certpractice/practice/PracticeDtoMapper.java` (performance debt; no unconfirmed acceptance threshold).
 
 ---
 

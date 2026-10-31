@@ -91,7 +91,12 @@ async function assess(resultValue: AssessmentResult): Promise<void> {
   assessing.value = true
   error.value = null
   try {
-    const response = await selfAssess(sessionId.value, itemId.value, resultValue)
+    const response = await selfAssess(
+      sessionId.value,
+      itemId.value,
+      resultValue,
+      crypto.randomUUID(),
+    )
     assessmentResult.value = response.finalResult as AssessmentResult
     finalResult.value = response.finalResult as AssessmentResult
     sessionStatus.value = response.sessionStatus

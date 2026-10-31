@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -17,6 +18,7 @@ import com.certpractice.notification.Notification;
 import com.certpractice.notification.NotificationRepository;
 import com.certpractice.question.CorrectionReport;
 import com.certpractice.question.CorrectionReportRepository;
+import com.certpractice.question.QuestionDtos;
 import com.certpractice.support.P1TestSupport;
 import com.certpractice.support.P2TestSupport;
 import org.junit.jupiter.api.Test;
@@ -158,6 +160,32 @@ class ModerationIntegrationTest extends P2TestSupport {
                 "CORRECTION_REPORT_RESOLVE".equals(log.getAction())
                         && reportId.equals(log.getTargetId())
                         && log.getOutcome() == AdminAuditLog.Outcome.SUCCESS));
+    }
+
+    @Test
+    void correctionReportRejectsUnpublishedQuestion() throws Exception {
+        P1TestSupport.SubjectChapter catalog = createSubjectAndChapter();
+        UUID reporterId = registerUser();
+        QuestionDtos.AdminQuestionDetail draft = authoringService.createQuestion(ADMIN_ID,
+                new QuestionDtos.CreateQuestionRequest(
+                        catalog.subjectId(), catalog.chapterId(), "SINGLE_CHOICE",
+                        "draft correction " + UUID.randomUUID(),
+                        "Explanation", null, "MEDIUM", "Test source",
+                        List.of(
+                                new QuestionDtos.OptionInput("A", "Option A", false),
+                                new QuestionDtos.OptionInput("B", "Option B", true)),
+                        List.of(), List.of()));
+
+        mockMvc.perform(post("/api/v1/correction-reports")
+                        .with(appUser(reporterId, usernameFor(reporterId)))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "questionId", draft.questionId().toString(),
+                                "questionVersionId", draft.versions().get(0).versionId().toString(),
+                                "target", "STEM",
+                                "description", "草稿不应接受纠错"))))
+                .andExpect(status().isNotFound());
     }
 
     @Test

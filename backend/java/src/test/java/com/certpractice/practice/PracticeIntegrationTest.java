@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.certpractice.question.QuestionDtos;
 import com.certpractice.support.P1TestSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.Test;
@@ -202,6 +203,42 @@ class PracticeIntegrationTest extends P1TestSupport {
         UUID otherUser = registerUser();
         mockMvc.perform(get("/api/v1/me/records/{id}", sessionId)
                         .with(appUser(otherUser, "other")))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void draftAndOfflineQuestionsCannotBeFavorited() throws Exception {
+        SubjectChapter catalog = createSubjectAndChapter();
+        UUID userId = registerUser();
+        QuestionDtos.AdminQuestionDetail draft = authoringService.createQuestion(ADMIN_ID,
+                new QuestionDtos.CreateQuestionRequest(
+                        catalog.subjectId(), catalog.chapterId(), "SINGLE_CHOICE",
+                        "favorite visibility " + UUID.randomUUID(),
+                        "Explanation", null, "MEDIUM", "Test source",
+                        List.of(
+                                new QuestionDtos.OptionInput("A", "Option A", false),
+                                new QuestionDtos.OptionInput("B", "Option B", true)),
+                        List.of(), List.of()));
+        UUID questionId = draft.questionId();
+        UUID versionId = draft.versions().get(0).versionId();
+
+        mockMvc.perform(put("/api/v1/me/favorites/{questionId}", questionId)
+                        .with(appUser(userId, "user")).with(csrf()))
+                .andExpect(status().isNotFound());
+
+        publish(versionId);
+        mockMvc.perform(put("/api/v1/me/favorites/{questionId}", questionId)
+                        .with(appUser(userId, "user")).with(csrf()))
+                .andExpect(status().isNoContent());
+        assertThat(getJson("/api/v1/me/favorites", userId).size()).isEqualTo(1);
+
+        mockMvc.perform(post("/api/v1/admin/questions/{id}/offline", questionId)
+                        .with(admin()).with(csrf()))
+                .andExpect(status().isOk());
+
+        assertThat(getJson("/api/v1/me/favorites", userId).size()).isZero();
+        mockMvc.perform(put("/api/v1/me/favorites/{questionId}", questionId)
+                        .with(appUser(userId, "user")).with(csrf()))
                 .andExpect(status().isNotFound());
     }
 

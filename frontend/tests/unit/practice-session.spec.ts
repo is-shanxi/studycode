@@ -30,7 +30,13 @@ function item(ordinal: number, answered: boolean): SessionItemView {
   }
 }
 
-function session(status: SessionView['status'], items: SessionItemView[]): SessionView {
+function session(
+  status: SessionView['status'],
+  items: SessionItemView[],
+  allowedActions: string[] = status === 'IN_PROGRESS'
+    ? ['SAVE_ANSWER', 'SUBMIT', 'ABANDON']
+    : ['VIEW_RESULT'],
+): SessionView {
   return {
     sessionId: 'session-1',
     mode: 'NORMAL',
@@ -43,7 +49,7 @@ function session(status: SessionView['status'], items: SessionItemView[]): Sessi
       aiVariant: 0,
       buckets: { unseen: items.length, wrong: 0, normal: 0 },
     },
-    allowedActions: [],
+    allowedActions,
     items,
   }
 }
@@ -73,6 +79,12 @@ describe('practice session helpers', () => {
     expect(canSubmit(session('IN_PROGRESS', [item(1, true), item(2, false)]))).toBe(false)
     expect(canSubmit(session('COMPLETED', [item(1, true), item(2, true)]))).toBe(false)
     expect(answeredCount(session('IN_PROGRESS', [item(1, true), item(2, false)]))).toBe(1)
+  })
+
+  it('treats server allowedActions as the submission authority', () => {
+    const answered = [item(1, true), item(2, true)]
+    expect(canSubmit(session('IN_PROGRESS', answered, []))).toBe(false)
+    expect(canSubmit(session('IN_PROGRESS', answered, ['SUBMIT']))).toBe(true)
   })
 
   it('exposes the actual composition, including bucket fallback counts', () => {

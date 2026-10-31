@@ -53,6 +53,7 @@ infra/env/.env.local
 
 # IDE and OS
 .idea/
+*.iml
 .vscode/
 .DS_Store
 Thumbs.db

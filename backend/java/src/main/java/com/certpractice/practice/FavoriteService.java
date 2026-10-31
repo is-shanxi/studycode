@@ -10,6 +10,7 @@ import com.certpractice.question.QuestionVersion;
 import com.certpractice.question.QuestionVersionRepository;
 import com.certpractice.shared.error.ApiException;
 import com.certpractice.shared.error.ErrorCode;
+import com.certpractice.shared.web.Guard;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,9 +35,11 @@ public class FavoriteService {
 
     @Transactional
     public void add(final UUID userId, final UUID questionId) {
-        if (!questions.existsById(questionId)) {
-            throw new ApiException(ErrorCode.NOT_FOUND, "Question not found");
-        }
+        Question question = questions.findById(questionId)
+                .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Question not found"));
+        Guard.require(question.getStatus() == Question.Status.PUBLISHED
+                        && question.getPublishedVersionId() != null,
+                ErrorCode.NOT_FOUND, "Question not found");
         if (favorites.existsByIdUserIdAndIdQuestionId(userId, questionId)) {
             return;
         }
@@ -62,7 +65,7 @@ public class FavoriteService {
             if (question == null) {
                 continue;
             }
-            QuestionVersion version = currentVersion(question);
+            QuestionVersion version = publishedVersion(question);
             if (version == null) {
                 continue;
             }
@@ -78,10 +81,11 @@ public class FavoriteService {
         return views;
     }
 
-    private QuestionVersion currentVersion(final Question question) {
-        if (question.getPublishedVersionId() != null) {
-            return versions.findById(question.getPublishedVersionId()).orElse(null);
+    private QuestionVersion publishedVersion(final Question question) {
+        if (question.getStatus() != Question.Status.PUBLISHED
+                || question.getPublishedVersionId() == null) {
+            return null;
         }
-        return versions.findFirstByQuestionIdOrderByVersionNoDesc(question.getId()).orElse(null);
+        return versions.findById(question.getPublishedVersionId()).orElse(null);
     }
 }

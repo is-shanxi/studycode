@@ -5,10 +5,12 @@ import java.util.UUID;
 
 import com.certpractice.question.CorrectionReport;
 import com.certpractice.question.CorrectionReportRepository;
+import com.certpractice.question.Question;
 import com.certpractice.question.QuestionRepository;
 import com.certpractice.question.QuestionVersionRepository;
 import com.certpractice.shared.error.ApiException;
 import com.certpractice.shared.error.ErrorCode;
+import com.certpractice.shared.web.Guard;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,8 +42,10 @@ public class CorrectionReportService {
     public CommunityDtos.ReportCreated create(
             final UUID userId,
             final CommunityDtos.CorrectionReportRequest request) {
-        questions.findById(request.questionId())
+        Question question = questions.findById(request.questionId())
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Question not found"));
+        Guard.require(question.getStatus() == Question.Status.PUBLISHED,
+                ErrorCode.NOT_FOUND, "Question not found");
         versions.findByIdAndQuestionId(request.questionVersionId(), request.questionId())
                 .orElseThrow(() -> new ApiException(
                         ErrorCode.VALIDATION_FAILED,
