@@ -24,33 +24,29 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Controlled random question selection. Buckets follow the 50/30/20 default
- * (unseen/wrong/normal); when a bucket is short the remaining legal questions
- * fill the gap. The random seed and actual composition are part of the session
- * rule snapshot.
+ * Controlled random question selection. Buckets default to 50/30/20
+ * (unseen/wrong/normal) and difficulty to 30/50/20 (easy/medium/hard); both are
+ * configurable through {@link PracticeSelectionProperties}. When a bucket is
+ * short the remaining legal questions fill the gap. The random seed, weights and
+ * actual composition are part of the session rule snapshot.
  */
 @Service
 public class QuestionSelectionService {
 
-    private static final double UNSEEN_WEIGHT = 0.5;
-    private static final double WRONG_WEIGHT = 0.3;
-    private static final double NORMAL_WEIGHT = 0.2;
-    private static final Map<String, Double> DIFFICULTY_WEIGHTS = Map.of(
-            "EASY", 0.3,
-            "MEDIUM", 0.5,
-            "HARD", 0.2);
-
     private final EntityManager entityManager;
     private final WrongQuestionRepository wrongQuestions;
     private final AiVariantSourceRepository aiVariants;
+    private final PracticeSelectionProperties selection;
 
     public QuestionSelectionService(
             final EntityManager entityManager,
             final WrongQuestionRepository wrongQuestions,
-            final AiVariantSourceRepository aiVariants) {
+            final AiVariantSourceRepository aiVariants,
+            final PracticeSelectionProperties selection) {
         this.entityManager = entityManager;
         this.wrongQuestions = wrongQuestions;
         this.aiVariants = aiVariants;
+        this.selection = selection;
     }
 
     @Transactional(readOnly = true)
@@ -142,9 +138,12 @@ public class QuestionSelectionService {
         ruleSnapshot.put("requestedCount", requestedCount);
         ruleSnapshot.put("historyDays", historyDays);
         ruleSnapshot.put("seed", seed);
-        ruleSnapshot.put("bucketWeights", Map.of("unseen", UNSEEN_WEIGHT, "wrong", WRONG_WEIGHT,
-                "normal", NORMAL_WEIGHT));
-        ruleSnapshot.put("difficultyWeights", DIFFICULTY_WEIGHTS);
+        ruleSnapshot.put("bucketWeights", Map.of(
+                "unseen", selection.getUnseenWeight(),
+                "wrong", selection.getWrongWeight(),
+                "normal", selection.getNormalWeight()));
+        ruleSnapshot.put("difficultyWeights", selection.difficultyWeights());
+        ruleSnapshot.put("maxCandidates", selection.getMaxCandidates());
         ruleSnapshot.put("quotas", Map.of("unseen", quotas[0], "wrong", quotas[1], "normal", quotas[2]));
         ruleSnapshot.put("actual", Map.of("unseen", unseenCount, "wrong", wrongCount, "normal", normalCount));
         ruleSnapshot.put("fallback", selected.size() < requestedCount);
@@ -187,7 +186,8 @@ public class QuestionSelectionService {
                 bindings.put("tagCount", (long) filters.tagIds().size());
             }
         }
-        sql.append(" ORDER BY q.id");
+        sql.append(" ORDER BY q.id LIMIT :maxCandidates");
+        bindings.put("maxCandidates", selection.getMaxCandidates());
 
         Query query = entityManager.createNativeQuery(sql.toString(), Tuple.class);
         bindings.forEach(query::setParameter);
@@ -249,20 +249,34 @@ public class QuestionSelectionService {
 
     private double weight(final Candidate candidate) {
         double bucket = bucketWeight(candidate.bucket());
-        double difficulty = DIFFICULTY_WEIGHTS.getOrDefault(candidate.difficulty(), 0.5);
+        double difficulty = selection.difficultyWeight(candidate.difficulty());
         return bucket * difficulty;
     }
 
     private double bucketWeight(final Bucket bucket) {
         return switch (bucket) {
-            case UNSEEN -> UNSEEN_WEIGHT;
-            case WRONG -> WRONG_WEIGHT;
-            case NORMAL -> NORMAL_WEIGHT;
+            case UNSEEN -> selection.getUnseenWeight();
+            case WRONG -> selection.getWrongWeight();
+            case NORMAL -> selection.getNormalWeight();
         };
     }
 
     private int[] quotas(final int requestedCount) {
-        double[] ratios = {UNSEEN_WEIGHT, WRONG_WEIGHT, NORMAL_WEIGHT};
+        return quotas(requestedCount,
+                selection.getUnseenWeight(),
+                selection.getWrongWeight(),
+                selection.getNormalWeight());
+    }
+
+    static int[] quotas(
+            final int requestedCount,
+            final double unseenWeight,
+            final double wrongWeight,
+            final double normalWeight) {
+        if (unseenWeight + wrongWeight + normalWeight <= 0) {
+            throw new IllegalArgumentException("bucket weights must sum to a positive value");
+        }
+        double[] ratios = {unseenWeight, wrongWeight, normalWeight};
         int[] quotas = new int[3];
         double[] fractions = new double[3];
         int used = 0;

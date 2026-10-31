@@ -47,7 +47,7 @@ public class QuestionLifecycleService {
         Guard.require(version.getStatus() == Question.Status.DRAFT, ErrorCode.STATE_CONFLICT,
                 "Only draft versions can be submitted for review");
 
-        Question question = requireQuestion(version.getQuestionId());
+        Question question = requireQuestionForUpdate(version.getQuestionId());
         transition(version, actorId, Question.Status.PENDING_REVIEW, commentOf(request));
         if (question.getPublishedVersionId() == null) {
             question.setStatus(Question.Status.PENDING_REVIEW);
@@ -92,7 +92,7 @@ public class QuestionLifecycleService {
         Guard.require(version.getStatus() == Question.Status.PENDING_REVIEW, ErrorCode.STATE_CONFLICT,
                 "Only versions pending review can be rejected");
 
-        Question question = requireQuestion(version.getQuestionId());
+        Question question = requireQuestionForUpdate(version.getQuestionId());
         transition(version, actorId, Question.Status.DRAFT, commentOf(request));
         if (question.getPublishedVersionId() == null) {
             question.setStatus(Question.Status.DRAFT);
@@ -125,7 +125,7 @@ public class QuestionLifecycleService {
             final UUID actorId,
             final UUID questionId,
             final QuestionDtos.ReviewRequest request) {
-        Question question = requireQuestion(questionId);
+        Question question = requireQuestionForUpdate(questionId);
         Guard.require(question.getPublishedVersionId() != null, ErrorCode.STATE_CONFLICT,
                 "Question is not published");
 
@@ -146,9 +146,11 @@ public class QuestionLifecycleService {
     }
 
     private void publishInternal(final UUID actorId, final QuestionVersion version, final String comment) {
+        Question question = requireQuestionForUpdate(version.getQuestionId());
+        // Validate after locking: validateForPublish loads the question entity, and
+        // loading it before the lock would leave a stale managed copy in this
+        // persistence context after a concurrent transaction commits.
         authoringService.validateForPublish(version);
-
-        Question question = requireQuestion(version.getQuestionId());
         Instant now = Instant.now();
         UUID previousVersionId = question.getPublishedVersionId();
         if (previousVersionId != null && !previousVersionId.equals(version.getId())) {
@@ -209,8 +211,8 @@ public class QuestionLifecycleService {
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Question version not found"));
     }
 
-    private Question requireQuestion(final UUID questionId) {
-        return questions.findById(questionId)
+    private Question requireQuestionForUpdate(final UUID questionId) {
+        return questions.findByIdForUpdate(questionId)
                 .orElseThrow(() -> new ApiException(ErrorCode.NOT_FOUND, "Question not found"));
     }
 

@@ -73,5 +73,14 @@ app:
     service-token: ${JAVA_AI_SERVICE_TOKEN:local-internal-token}
     connect-timeout: ${JAVA_AI_CONNECT_TIMEOUT_SECONDS:5}s
     request-timeout: ${JAVA_AI_REQUEST_TIMEOUT_SECONDS:30}s
+  practice:
+    selection:
+      unseen-weight: 0.5
+      wrong-weight: 0.3
+      normal-weight: 0.2
+      easy-weight: 0.3
+      medium-weight: 0.5
+      hard-weight: 0.2
+      max-candidates: 20000
   security:
     cookie-secure: ${SESSION_COOKIE_SECURE:false}
