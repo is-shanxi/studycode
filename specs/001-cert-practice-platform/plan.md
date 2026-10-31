@@ -10,7 +10,7 @@
 
 系统采用前后端分离架构：Vue 3 + TypeScript 单页应用分别承载 `/app` 与 `/admin`；Java Spring Boot 模块化单体作为唯一业务后端和 PostgreSQL 写入方；Python FastAPI 作为无状态 AI 服务，通过内部 REST 接口提供辅导及变式题生成能力。题目、练习会话和讨论均保存版本快照，保证历史可追溯；本地使用 Docker Compose，不引入 Redis、消息队列或搜索引擎。
 
-详细架构、模块边界、关键流程与部署说明见 [技术设计文档](../../../docs/技术设计文档.md)。
+详细架构、模块边界、关键流程与部署说明见 [技术设计文档](../../docs/技术设计文档.md)。
 
 ## Technical Context
 
@@ -69,11 +69,11 @@ specs/001-cert-practice-platform/
 ```text
 frontend/
 ├── src/
-│   ├── app/                 # 用户端路由、页面、权限守卫
+│   ├── app/                 # 用户端路由、页面、布局与页面组件
 │   ├── admin/               # 管理端路由、页面
-│   ├── components/          # 跨页面共享组件
-│   ├── features/            # 按业务域组织的 API 客户端和组合式函数
-│   ├── stores/              # 会话与少量 UI 状态
+│   ├── components/          # 跨页面共享组件（预留）
+│   ├── features/            # 按业务域组织的 API、组合式逻辑与会话 Store
+│   ├── stores/              # 跨页面 UI 状态（预留）
 │   ├── styles/
 │   └── main.ts
 └── tests/
@@ -109,6 +109,7 @@ infra/
 └── env/
 
 docs/
+├── 需求规约.md
 └── 技术设计文档.md
 ```
 
@@ -134,7 +135,7 @@ docs/
 - HTTP 契约与通用协议：[contracts/http-api.md](./contracts/http-api.md)
 - 契约目录说明：[contracts/README.md](./contracts/README.md)
 - 本地运行与验收步骤：[quickstart.md](./quickstart.md)
-- 面向开发者的整体技术说明：[技术设计文档.md](../../../docs/技术设计文档.md)
+- 面向开发者的整体技术说明：[技术设计文档.md](../../docs/技术设计文档.md)
 
 ## Post-Design Constitution Check
 
