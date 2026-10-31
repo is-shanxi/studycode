@@ -86,10 +86,13 @@ export function selfAssess(
   sessionId: string,
   itemId: string,
   result: 'PASS' | 'FAIL',
+  idempotencyKey?: string,
 ): Promise<{ itemId: string; finalResult: string; sessionStatus: string }> {
-  return apiClient.post(`/practice-sessions/${sessionId}/items/${itemId}/self-assessment`, {
-    result,
-  })
+  return apiClient.post(
+    `/practice-sessions/${sessionId}/items/${itemId}/self-assessment`,
+    { result },
+    idempotencyKey ? { headers: { 'Idempotency-Key': idempotencyKey } } : undefined,
+  )
 }
 
 export function abandonSession(sessionId: string): Promise<void> {

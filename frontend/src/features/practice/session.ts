@@ -30,6 +30,7 @@ export function answeredCount(session: SessionView): number {
 export function canSubmit(session: SessionView): boolean {
   return (
     session.status === 'IN_PROGRESS' &&
+    session.allowedActions.includes('SUBMIT') &&
     session.items.length > 0 &&
     answeredCount(session) === session.items.length
   )
