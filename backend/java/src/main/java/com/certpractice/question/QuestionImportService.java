@@ -37,6 +37,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -60,6 +61,7 @@ public class QuestionImportService {
     private final QuestionAuthoringService authoringService;
     private final QuestionAuditService audit;
     private final ObjectMapper objectMapper;
+    private final long maxFileBytes;
 
     public QuestionImportService(
             final ImportBatchRepository batches,
@@ -70,7 +72,8 @@ public class QuestionImportService {
             final QuestionVersionRepository versions,
             final QuestionAuthoringService authoringService,
             final QuestionAuditService audit,
-            final ObjectMapper objectMapper) {
+            final ObjectMapper objectMapper,
+            @Value("${app.question.import.max-file-bytes:10485760}") final long maxFileBytes) {
         this.batches = batches;
         this.rowErrors = rowErrors;
         this.subjects = subjects;
@@ -80,6 +83,7 @@ public class QuestionImportService {
         this.authoringService = authoringService;
         this.audit = audit;
         this.objectMapper = objectMapper;
+        this.maxFileBytes = maxFileBytes;
     }
 
     @Transactional
@@ -90,6 +94,8 @@ public class QuestionImportService {
         String lowerName = fileName.toLowerCase(Locale.ROOT);
         Guard.require(lowerName.endsWith(".csv") || lowerName.endsWith(".xlsx"),
                 ErrorCode.VALIDATION_FAILED, "Only CSV or XLSX files are supported");
+        Guard.require(file.getSize() <= maxFileBytes, ErrorCode.UPLOAD_TOO_LARGE,
+                "Import file exceeds the allowed size");
 
         byte[] bytes;
         try {

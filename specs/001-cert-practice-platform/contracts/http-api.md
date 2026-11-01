@@ -1,6 +1,6 @@
 # HTTP API 契约
 
-版本：v1｜日期：2026-10-23
+版本：v1｜日期：2026-11-01
 
 ## 1. 通用协议
 
@@ -455,6 +455,44 @@ difficulty, type, page, size
 ```
 
 服务端只保存密码哈希，成功响应为 `204 No Content`。密码不得出现在响应、日志或审计摘要中；管理员需通过安全渠道将临时密码转交用户。
+
+### 9.4 目录与标签维护
+
+| 方法 | 路径 | 说明 |
+|---|---|---|
+| GET | `/admin/catalog/certificates` | 全部证书，包含停用项 |
+| POST | `/admin/catalog/certificates` | 创建证书 |
+| PUT | `/admin/catalog/certificates/{id}` | 更新证书 |
+| GET | `/admin/catalog/subjects` | 科目列表，可选 `certificateId` 过滤 |
+| POST | `/admin/catalog/subjects` | 在指定证书下创建科目 |
+| PUT | `/admin/catalog/subjects/{id}` | 更新科目；所属证书不可变更 |
+| GET | `/admin/catalog/chapters` | 章节列表，可选 `subjectId` 过滤 |
+| POST | `/admin/catalog/chapters` | 在指定科目下创建章节 |
+| PUT | `/admin/catalog/chapters/{id}` | 更新章节；所属科目不可变更 |
+| GET | `/admin/catalog/tags` | 全部标签，包含停用项 |
+| POST | `/admin/catalog/tags` | 创建标签 |
+| PUT | `/admin/catalog/tags/{id}` | 重命名或停用标签 |
+
+创建/更新载荷：
+
+```json
+{
+  "code": "CERT-DEMO",
+  "name": "计算机等级考试",
+  "status": "ACTIVE",
+  "sortOrder": 10
+}
+```
+
+科目创建额外携带 `certificateId`，章节创建额外携带 `subjectId`；标签只需 `name` 和 `status`。
+
+规则：
+
+- 编码统一转为大写，允许字母、数字、点、下划线和连字符，长度 1～64；证书编码全局唯一，科目编码在同一证书内唯一，章节编码在同一科目内唯一。
+- 标签按 NFKC、去首尾空白和 ASCII 小写归一化后唯一。
+- `status` 只能为 `ACTIVE` 或 `INACTIVE`。停用项不出现在 `/catalog/tree` 和 `/tags`，但不物理删除，历史题目引用保持不变。
+- 更新不存在的条目、或在不存在/无权的父级下创建返回 `404 NOT_FOUND`；编码或标签重名返回 `409 STATE_CONFLICT`。
+- 所有创建和更新写审计：`CATALOG_CERTIFICATE_CREATE`、`CATALOG_CERTIFICATE_UPDATE`，科目、章节和标签同理。
 
 ## 10. Java 到 Python 内部契约
 

@@ -257,7 +257,7 @@
 
 **Purpose**: 收口跨故事安全性、性能、文档和完整验收。
 
-- [ ] T150 [P] Complete and validate OpenAPI 3.1 coverage for public and admin APIs in `speckit/specs/001-cert-practice-platform/contracts/openapi.yaml`
+- [X] T150 [P] Complete and validate OpenAPI 3.1 coverage for public and admin APIs in `speckit/specs/001-cert-practice-platform/contracts/openapi.yaml`
 - [ ] T151 [P] Run a full authorization, CSRF, session invalidation and answer-leak review across `backend/java/src/test/java/com/certpractice/security/`
 - [ ] T152 Review and tune PostgreSQL indexes and query plans for search, practice history, dashboards and selection candidate counting in `backend/java/src/main/resources/db/migration/V7__index_tuning.sql`
 - [ ] T153 [P] Validate responsive engineering baselines at 360 px, 768 px and 1280 px in `frontend/tests/e2e/responsive.spec.ts` without treating them as final product acceptance until confirmed
@@ -279,8 +279,8 @@
 - [X] T162 Align `SUBMITTED` semantics in the design document with the implemented state machine (design §7.3/§7.4).
 - [X] T163 Reject favorites and correction reports for unpublished/offline questions and cover them with integration tests (design §7.4/§10).
 - [X] T164 Record the 2026-10-31 module-boundary and BCrypt decisions in the design document (design §3/§5.2/§8.1).
-- [ ] T165 [P] Add administrator catalog/subject/chapter/tag maintenance APIs and pages in `backend/java/src/main/java/com/certpractice/catalog/` and `frontend/src/admin/pages/` (FR-05; deferred until after P3).
-- [ ] T166 [P] Complete security and operations follow-ups: login failure throttling/lockout, CSP, and explicit multipart upload limits (design §10).
+- [X] T165 [P] Add administrator catalog/subject/chapter/tag maintenance APIs and pages in `backend/java/src/main/java/com/certpractice/catalog/` and `frontend/src/admin/pages/` (FR-05; deferred until after P3).
+- [X] T166 [P] Complete security and operations follow-ups: login failure throttling/lockout, CSP, and explicit multipart upload limits (design §10).
 - [X] T167 Move `需求规约.md` and `技术设计文档.md` into `docs/` and update relative links in `specs/001-cert-practice-platform/plan.md`, `spec.md`, and the design document.
 - [X] T168 Add Java unit tests for `TextNormalizer` and selection quota math, and align the design document test strategy (design §14).
 - [X] T169 Use server `allowedActions` for submission readiness and send `Idempotency-Key` on self-assessment, with frontend unit tests.

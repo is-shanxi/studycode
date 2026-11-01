@@ -19,6 +19,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,6 +43,7 @@ public class IdentityService {
     private final SecurityContextRepository securityContextRepository;
     private final CurrentUserService currentUserService;
     private final JdbcTemplate jdbcTemplate;
+    private final LoginThrottleService loginThrottleService;
 
     public IdentityService(
             final AppUserRepository users,
@@ -50,7 +52,8 @@ public class IdentityService {
             final AuthenticationManager authenticationManager,
             final SecurityContextRepository securityContextRepository,
             final CurrentUserService currentUserService,
-            final JdbcTemplate jdbcTemplate) {
+            final JdbcTemplate jdbcTemplate,
+            final LoginThrottleService loginThrottleService) {
         this.users = users;
         this.userRoles = userRoles;
         this.passwordEncoder = passwordEncoder;
@@ -58,6 +61,7 @@ public class IdentityService {
         this.securityContextRepository = securityContextRepository;
         this.currentUserService = currentUserService;
         this.jdbcTemplate = jdbcTemplate;
+        this.loginThrottleService = loginThrottleService;
     }
 
     @Transactional
@@ -95,8 +99,18 @@ public class IdentityService {
             final IdentityDtos.LoginRequest request,
             final HttpServletRequest httpRequest,
             final HttpServletResponse httpResponse) {
-        Authentication authentication = authenticationManager.authenticate(
-                UsernamePasswordAuthenticationToken.unauthenticated(request.username(), request.password()));
+        String normalizedUsername = TextNormalizer.normalizeUsername(request.username());
+        loginThrottleService.assertNotLocked(normalizedUsername);
+
+        Authentication authentication;
+        try {
+            authentication = authenticationManager.authenticate(
+                    UsernamePasswordAuthenticationToken.unauthenticated(request.username(), request.password()));
+        } catch (AuthenticationException exception) {
+            loginThrottleService.recordFailure(normalizedUsername);
+            throw exception;
+        }
+        loginThrottleService.recordSuccess(normalizedUsername);
 
         SecurityContext context = SecurityContextHolder.createEmptyContext();
         context.setAuthentication(authentication);
