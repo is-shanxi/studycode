@@ -162,3 +162,26 @@
 |数据与运行|本地开发、匿名化注销|保留期限、公开部署前运维要求、具体性能阈值|
 
 这些参数不妨碍搭建基础模块，但依赖它们的最终验收应在实现前固定配置或补充确认。
+
+## 10. 验收追溯矩阵
+
+下表记录 AC-01～AC-14 与自动化测试的对应关系，用于 2026-11-02 的收口复核。E2E 用例位于 `frontend/tests/e2e/`，Java 集成测试位于 `backend/java/src/test/java/com/certpractice/`。
+
+| 验收项 | Java 集成/契约测试 | 前端 E2E |
+|---|---|---|
+| AC-01 | `AuthIntegrationTest.registrationIgnoresClientSuppliedAdminRole`、`SecurityReviewIntegrationTest.everyAdminSurfaceRejectsOrdinaryUsers`、`ownershipIsEnforcedForSessionsRecordsNotificationsAndAiConversations` | `p1-core-flow.spec.ts` 注册旅程 |
+| AC-02 | `PracticeIntegrationTest.searchUsesTagIntersectionAndNeverHiddenFields`、`AnswerVisibilityContractTest`、`SecurityReviewIntegrationTest.searchAndInProgressSessionResponsesRemainAnswerSafe` | `p1-core-flow.spec.ts` 题库筛选 |
+| AC-03 | `PracticeIntegrationTest.sessionCreationIsIdempotentDeduplicatedAndAnswerSafe`、`AnswerVisibilityContractTest` | `p1-core-flow.spec.ts` 练习提交 |
+| AC-04 | `PracticeIntegrationTest.submissionRequiresAllAnswersAndCannotBeRepeated` | `p1-core-flow.spec.ts` |
+| AC-05 | `PracticeIntegrationTest.submissionRequiresAllAnswersAndCannotBeRepeated` | `p1-core-flow.spec.ts` 逐题自评 |
+| AC-06 | `QuestionVersionIntegrationTest.publishingNewVersionKeepsHistoricalSessionsAndOfflineKeepsHistory`、`DiscussionIntegrationTest.publishingANewVersionKeepsOldDiscussionsBoundToTheirVersion` | `p1-version-history.spec.ts` |
+| AC-07 | `PracticeIntegrationTest.wrongQuestionsFavoritesAndOwnershipFollowP1Rules` | `p1-core-flow.spec.ts` |
+| AC-08 | `SelfTestIntegrationTest.usesSixFourCompositionWhenApprovedVariantsAreSufficient`、`fillsVariantShortageWithApprovedOriginals`、`usesActualCountWhenTheLegalPoolIsSmallerThanRequested`、`rejectsSelfTestWhenNoLegalQuestionMatches` | `p3-selftest-ai.spec.ts` |
+| AC-09 | `SelfTestIntegrationTest.excludesUnpublishedOrUnapprovedVariantsFromThePool` | `p3-selftest-ai.spec.ts` 管理端候选审核 |
+| AC-10 | `AiGateIntegrationTest.rejectsQuestionConversationsForInProgressItems`、`rejectsQuestionConversationsWhileSelfAssessmentIsPending`、`allowsTheOwnerAfterCompletionAndSendsMinimalContext`、`otherUsersCannotReadOrClearAConversation` | `p3-selftest-ai.spec.ts` 未提交拒绝 |
+| AC-11 | `AiQuotaConcurrencyTest.personalDailyQuotaIsNeverExceededUnderConcurrentRequests`、`sessionTurnLimitStopsRunawayConversations`、`teamDailyBudgetIsNeverExceededUnderConcurrentRequests`、`idempotentRetriesConsumeOneQuotaUnit`、`quotaEndpointReportsUsageLimitsAndTeamAvailability`、`failedRequestsRefundPersonalQuotaButKeepTheReservedBudget` | `p3-selftest-ai.spec.ts` 额度面板 |
+| AC-12 | `ModerationIntegrationTest.reportResolutionHidesContentNotifiesReporterAndWritesAudit`、`DiscussionIntegrationTest.inProgressPracticeBlocksDiscussionAccessUntilSessionCompletes`、`NotificationIntegrationTest.commentRepliesCreatePersistentUnreadNotifications` | `p2-community.spec.ts` |
+| AC-13 | `QuestionImportIntegrationTest.csvPreviewReportsErrorsWithoutWritingAndConfirmCreatesDrafts`、`xlsxUploadIsParsedAndConfirmed`、`QuestionImportUploadLimitTest` | 管理端导入页面由 `p2`/`p1` 旅程覆盖 |
+| AC-14 | `PracticeIntegrationTest.offlineQuestionIsExcludedFromNewSessionsButHistoryRemains`、`AuthIntegrationTest.deletedUserSessionIsRejectedOnNextRequest`、`SecurityReviewIntegrationTest.disabledUsersLoseTheirExistingSession` | `p1-version-history.spec.ts` |
+
+响应式工程基线另由 `responsive.spec.ts` 覆盖 360/768/1280 视口；该检查是回归护栏，不代表最终产品验收尺寸。
