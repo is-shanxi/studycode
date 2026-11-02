@@ -51,6 +51,9 @@ htmlcov/
 .env.*.local
 infra/env/.env.local
 
+# Local runtime state (PID files and logs)
+.run/
+
 # IDE and OS
 .idea/
 *.iml
