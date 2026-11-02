@@ -2,7 +2,7 @@
 
 日期：2026-10-23｜依赖：[plan.md](./plan.md)、[data-model.md](./data-model.md)、[http-api.md](./contracts/http-api.md)
 
-本指南描述技术方案落地后的本地验证方式。当前仓库处于设计阶段，真正可执行前必须先完成 P1 实现和本地脚本。
+本指南描述 P1、P2、P3 已实现后的本地运行、联调和回归验收方式。统一检查脚本、演示数据和自动化测试均已就绪；`§10` 记录了 2026-11-02 的执行结果。
 
 ## 1. 前置环境
 
@@ -130,9 +130,10 @@ pnpm dev
 ```powershell
 Set-Location 'frontend'
 pnpm lint
+pnpm format:check
 pnpm typecheck
-pnpm test
-pnpm exec playwright test
+pnpm test:unit
+pnpm test:e2e
 ```
 
 ### 6.2 Java
@@ -141,6 +142,7 @@ pnpm exec playwright test
 Set-Location 'backend/java'
 ./mvnw test
 ./mvnw verify
+# PowerShell 使用 .\mvnw.cmd test / .\mvnw.cmd verify
 ```
 
 集成测试使用 Testcontainers PostgreSQL，不依赖开发者本机数据库。
@@ -206,3 +208,53 @@ P1 本地验收必须满足：
 - 演示数据可重建，不依赖手工改库。
 
 P2/P3 已补齐 V-11 至 V-15 的自动化与人工检查。真实模型联调前，Mock 路径必须先全部通过；E2E 的 AI 场景需要按 4.3 启动 Python 服务。
+
+## 10. 2026-11-02 执行记录
+
+**环境**：Windows 11、Docker Desktop 29.5.2、PostgreSQL 16.15、Java 21.0.3、Python 3.13.9（`.venv`）、Playwright Chromium/Firefox。
+
+### 10.1 自动化检查
+
+| 检查 | 命令 | 结果 |
+|---|---|---|
+| 统一检查 | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check.ps1` | 通过：前端 lint/format/typecheck/unit；Java 全量测试与 0 Checkstyle 违规；Python ruff/format/mypy/pytest |
+| Chromium E2E | `VITE_API_PROXY_TARGET=http://localhost:8081 npx playwright test --project=chromium` | 15/15 通过（独立数据库） |
+| Firefox E2E | `VITE_API_PROXY_TARGET=http://localhost:8082 npx playwright test --project=firefox` | 15/15 通过（独立数据库） |
+| Cookie 与本地存储 | `curl` 登录后检查 Cookie jar + 前端源码检索 | `SESSION` 带 `HttpOnly`；`XSRF-TOKEN` 可读；前端无 `localStorage` 使用 |
+
+> E2E 套件会创建进行中会话并执行举报/治理操作。重复执行或让 Chromium 与 Firefox 共用同一数据库时，残留的进行中会话会阻止 P2 讨论场景；本轮为每个浏览器使用独立数据库验证，重建数据库后即可复跑。
+
+### 10.2 验收场景执行结果
+
+| 编号 | 执行方式 | 结果 |
+|---|---|---|
+| V-01 | `AuthIntegrationTest.registrationIgnoresClientSuppliedAdminRole`、`p1-core-flow` 注册旅程 | 通过 |
+| V-02 | `AuthIntegrationTest.ordinaryUserCannotCallAdminEndpoints`、`SecurityReviewIntegrationTest.everyAdminSurfaceRejectsOrdinaryUsers`、`ownershipIsEnforcedForSessionsRecordsNotificationsAndAiConversations` | 通过 |
+| V-03 | `PracticeIntegrationTest.searchUsesTagIntersectionAndNeverHiddenFields` | 通过 |
+| V-04 | `PracticeIntegrationTest.searchUsesTagIntersectionAndNeverHiddenFields`（选项/解析关键词不命中） | 通过 |
+| V-05 | `PracticeIntegrationTest.sessionCreationIsIdempotentDeduplicatedAndAnswerSafe`、`p1-core-flow` 练习旅程 | 通过 |
+| V-06 | `PracticeIntegrationTest.submissionRequiresAllAnswersAndCannotBeRepeated` | 通过 |
+| V-07 | `PracticeIntegrationTest.submissionRequiresAllAnswersAndCannotBeRepeated`（自动匹配后仍待自评） | 通过 |
+| V-08 | `PracticeIntegrationTest.autoMismatchAndManualPassAreBothPreserved`（自动失败 + 自评成功结果并存） | 通过 |
+| V-09 | `QuestionVersionIntegrationTest.publishingNewVersionKeepsHistoricalSessionsAndOfflineKeepsHistory`、`p1-version-history` E2E | 通过 |
+| V-10 | `PracticeIntegrationTest.wrongQuestionsFavoritesAndOwnershipFollowP1Rules` | 通过 |
+| V-11 | `SelfTestIntegrationTest.fillsVariantShortageWithApprovedOriginals`、`usesActualCountWhenTheLegalPoolIsSmallerThanRequested`、`rejectsSelfTestWhenNoLegalQuestionMatches` | 通过 |
+| V-12 | `SelfTestIntegrationTest.excludesUnpublishedOrUnapprovedVariantsFromThePool` | 通过 |
+| V-13 | `AiGateIntegrationTest.rejectsQuestionConversationsForInProgressItems`、`p3-selftest-ai` 未提交拒绝旅程 | 通过 |
+| V-14 | `AiQuotaConcurrencyTest`（个人额度、会话轮次、团队预算、幂等与退款） | 通过 |
+| V-15 | `ModerationIntegrationTest.reportResolutionHidesContentNotifiesReporterAndWritesAudit`、`NotificationIntegrationTest.commentRepliesCreatePersistentUnreadNotifications`、`p2-community` E2E | 通过 |
+| V-16 | `QuestionImportIntegrationTest.csvPreviewReportsErrorsWithoutWritingAndConfirmCreatesDrafts`、`xlsxUploadIsParsedAndConfirmed`、`QuestionImportUploadLimitTest` | 通过 |
+| V-17 | `PracticeIntegrationTest.offlineQuestionIsExcludedFromNewSessionsButHistoryRemains` | 通过 |
+| V-18 | `SecurityReviewIntegrationTest.disabledUsersLoseTheirExistingSession`、`AuthIntegrationTest.deletedUserSessionIsRejectedOnNextRequest` | 通过 |
+
+### 10.3 安全人工检查替代结果
+
+| 检查项 | 方式 | 结果 |
+|---|---|---|
+| 进行中练习响应不含 `isCorrect`、`correctOptionId`、`referenceAnswer`、`explanation`、别名 | `AnswerVisibilityContractTest`、`P1RedactionTest`、`SecurityReviewIntegrationTest` 与 E2E 断言 | 通过 |
+| Cookie `HttpOnly`，除 CSRF 外无长期令牌写入 `localStorage` | curl Cookie jar + `grep -rn localStorage frontend/src` | 通过 |
+| 管理员页面隐藏时直接调用管理接口仍被拒绝 | `SecurityReviewIntegrationTest.everyAdminSurfaceRejectsOrdinaryUsers` | 通过 |
+| 未完成题目 AI 请求被 Java 拒绝，Python 不接收题目上下文 | `AiGateIntegrationTest`、`p3-selftest-ai` | 通过 |
+| 错误响应不包含 SQL、堆栈、供应商原始错误或提示词 | `P1RedactionTest`、`AiQuotaConcurrencyTest.failedRequestsRefundPersonalQuotaButKeepTheReservedBudget`、Python `test_redaction.py` | 通过 |
+
+本轮使用 MockProvider 完成全部 AI 路径，未进行真实模型供应商联调。响应式检查覆盖 360/768/1280 视口工程基线，最终支持的浏览器和移动端尺寸仍待产品确认。

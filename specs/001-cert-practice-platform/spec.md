@@ -173,7 +173,7 @@
 | AC-02 | `PracticeIntegrationTest.searchUsesTagIntersectionAndNeverHiddenFields`、`AnswerVisibilityContractTest`、`SecurityReviewIntegrationTest.searchAndInProgressSessionResponsesRemainAnswerSafe` | `p1-core-flow.spec.ts` 题库筛选 |
 | AC-03 | `PracticeIntegrationTest.sessionCreationIsIdempotentDeduplicatedAndAnswerSafe`、`AnswerVisibilityContractTest` | `p1-core-flow.spec.ts` 练习提交 |
 | AC-04 | `PracticeIntegrationTest.submissionRequiresAllAnswersAndCannotBeRepeated` | `p1-core-flow.spec.ts` |
-| AC-05 | `PracticeIntegrationTest.submissionRequiresAllAnswersAndCannotBeRepeated` | `p1-core-flow.spec.ts` 逐题自评 |
+| AC-05 | `PracticeIntegrationTest.submissionRequiresAllAnswersAndCannotBeRepeated`、`autoMismatchAndManualPassAreBothPreserved` | `p1-core-flow.spec.ts` 逐题自评 |
 | AC-06 | `QuestionVersionIntegrationTest.publishingNewVersionKeepsHistoricalSessionsAndOfflineKeepsHistory`、`DiscussionIntegrationTest.publishingANewVersionKeepsOldDiscussionsBoundToTheirVersion` | `p1-version-history.spec.ts` |
 | AC-07 | `PracticeIntegrationTest.wrongQuestionsFavoritesAndOwnershipFollowP1Rules` | `p1-core-flow.spec.ts` |
 | AC-08 | `SelfTestIntegrationTest.usesSixFourCompositionWhenApprovedVariantsAreSufficient`、`fillsVariantShortageWithApprovedOriginals`、`usesActualCountWhenTheLegalPoolIsSmallerThanRequested`、`rejectsSelfTestWhenNoLegalQuestionMatches` | `p3-selftest-ai.spec.ts` |
