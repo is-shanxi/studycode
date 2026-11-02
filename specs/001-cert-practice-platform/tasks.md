@@ -265,7 +265,7 @@
 - [ ] T155 Update architecture, operations and module ownership notes in `docs/技术设计文档.md` and `backend/java/README.md`
 - [ ] T156 Run all frontend, Java, Python and contract checks through `scripts/check.ps1`
 - [ ] T157 Execute every applicable scenario in `quickstart.md` and record expected results in `speckit/specs/001-cert-practice-platform/quickstart.md`
-- [ ] T158 Remove unused placeholders and verify all configuration keys in `infra/env/.env.example` and `infra/compose.yaml`
+- [X] T158 Remove unused placeholders and verify all configuration keys in `infra/env/.env.example` and `infra/compose.yaml`
 - [ ] T159 Complete the requirements-to-test traceability review against AC-01～AC-14 in `speckit/specs/001-cert-practice-platform/spec.md` and `frontend/tests/e2e/`
 
 ---
