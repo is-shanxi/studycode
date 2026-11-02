@@ -1,18 +1,29 @@
 package com.certpractice.practice;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import com.certpractice.catalog.Chapter;
+import com.certpractice.catalog.ChapterRepository;
+import com.certpractice.catalog.Tag;
+import com.certpractice.catalog.TagRepository;
 import com.certpractice.question.Question;
 import com.certpractice.question.QuestionDtos;
 import com.certpractice.question.QuestionOption;
 import com.certpractice.question.QuestionOptionRepository;
 import com.certpractice.question.QuestionRepository;
-import com.certpractice.question.QuestionSearchService;
 import com.certpractice.question.QuestionVersion;
 import com.certpractice.question.QuestionVersionRepository;
+import com.certpractice.question.QuestionVersionTag;
+import com.certpractice.question.QuestionVersionTagRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,7 +32,8 @@ import org.springframework.stereotype.Service;
 /**
  * Maps persistence entities into answer-safe session views and post-submission
  * result views. Only the result mapper can expose correct answers and
- * explanations.
+ * explanations. Item-level lookups are batched so a full session or result does
+ * not issue one query per question.
  */
 @Service
 public class PracticeDtoMapper {
@@ -32,7 +44,9 @@ public class PracticeDtoMapper {
     private final QuestionRepository questions;
     private final QuestionVersionRepository versions;
     private final QuestionOptionRepository options;
-    private final QuestionSearchService questionSearchService;
+    private final QuestionVersionTagRepository versionTags;
+    private final TagRepository tags;
+    private final ChapterRepository chapters;
     private final ObjectMapper objectMapper;
 
     public PracticeDtoMapper(
@@ -42,7 +56,9 @@ public class PracticeDtoMapper {
             final QuestionRepository questions,
             final QuestionVersionRepository versions,
             final QuestionOptionRepository options,
-            final QuestionSearchService questionSearchService,
+            final QuestionVersionTagRepository versionTags,
+            final TagRepository tags,
+            final ChapterRepository chapters,
             final ObjectMapper objectMapper) {
         this.sessionItems = sessionItems;
         this.answers = answers;
@@ -50,7 +66,9 @@ public class PracticeDtoMapper {
         this.questions = questions;
         this.versions = versions;
         this.options = options;
-        this.questionSearchService = questionSearchService;
+        this.versionTags = versionTags;
+        this.tags = tags;
+        this.chapters = chapters;
         this.objectMapper = objectMapper;
     }
 
@@ -61,6 +79,7 @@ public class PracticeDtoMapper {
     public PracticeDtos.SessionView toSessionView(
             final PracticeSession session,
             final List<SessionItem> items) {
+        LookupContext context = loadContext(items);
         int unseen = 0;
         int wrong = 0;
         int normal = 0;
@@ -73,14 +92,16 @@ public class PracticeDtoMapper {
                 default -> {
                 }
             }
-            Optional<UserAnswer> answer = answers.findBySessionItemId(item.getId());
-            Optional<SelfAssessment> assessment = assessments.findBySessionItemId(item.getId());
+            Optional<UserAnswer> answer = Optional.ofNullable(
+                    context.answersByItemId().get(item.getId()));
+            Optional<SelfAssessment> assessment = Optional.ofNullable(
+                    context.assessmentsByItemId().get(item.getId()));
             itemViews.add(new PracticeDtos.SessionItemView(
                     item.getId(),
                     item.getOrdinal(),
                     item.getSourceType().name(),
                     item.getSelectionBucket().name(),
-                    safeQuestion(item),
+                    safeQuestion(item, context),
                     answer.map(this::answerView).orElse(null),
                     answer.map(stored -> stored.getAutoMatchResult().name()).orElse(null),
                     assessment.map(stored -> stored.getResult().name()).orElse(null),
@@ -104,6 +125,7 @@ public class PracticeDtoMapper {
     public PracticeDtos.ResultView toResultView(
             final PracticeSession session,
             final List<SessionItem> items) {
+        LookupContext context = loadContext(items);
         List<PracticeDtos.ResultItemView> resultItems = new ArrayList<>();
         int objectiveAnswered = 0;
         int objectiveCorrect = 0;
@@ -112,14 +134,18 @@ public class PracticeDtoMapper {
         int selfFailed = 0;
 
         for (SessionItem item : items) {
-            Question question = questions.findById(item.getQuestionId()).orElse(null);
-            QuestionVersion version = versions.findById(item.getQuestionVersionId()).orElse(null);
+            Question question = context.questionsById().get(item.getQuestionId());
+            QuestionVersion version = context.versionsById().get(item.getQuestionVersionId());
             if (question == null || version == null) {
                 continue;
             }
-            Optional<UserAnswer> storedAnswer = answers.findBySessionItemId(item.getId());
-            Optional<SelfAssessment> assessment = assessments.findBySessionItemId(item.getId());
+            Optional<UserAnswer> storedAnswer = Optional.ofNullable(
+                    context.answersByItemId().get(item.getId()));
+            Optional<SelfAssessment> assessment = Optional.ofNullable(
+                    context.assessmentsByItemId().get(item.getId()));
             AnswerParts parts = storedAnswer.map(this::answerParts).orElse(new AnswerParts(null, null, 0));
+            List<QuestionOption> versionOptions = context.optionsByVersionId()
+                    .getOrDefault(version.getId(), List.of());
 
             UUID correctOptionId = null;
             if (question.getType() == Question.Type.SINGLE_CHOICE) {
@@ -129,8 +155,8 @@ public class PracticeDtoMapper {
                 if (item.getFinalResult() == SessionItem.Result.PASS) {
                     objectiveCorrect++;
                 }
-                correctOptionId = options.findByQuestionVersionIdAndCorrectTrue(version.getId())
-                        .stream()
+                correctOptionId = versionOptions.stream()
+                        .filter(QuestionOption::isCorrect)
                         .findFirst()
                         .map(QuestionOption::getId)
                         .orElse(null);
@@ -161,7 +187,7 @@ public class PracticeDtoMapper {
                     version.getExplanation(),
                     storedAnswer.map(answer -> answer.getAutoMatchResult().name()).orElse(null),
                     assessment.map(stored -> stored.getResult().name()).orElse(null),
-                    safeOptions(version.getId())));
+                    safeOptions(versionOptions)));
         }
 
         return new PracticeDtos.ResultView(
@@ -186,14 +212,25 @@ public class PracticeDtoMapper {
     public PracticeDtos.RecordSummary toRecordSummary(
             final PracticeSession session,
             final List<SessionItem> items) {
+        List<UUID> itemIds = items.stream().map(SessionItem::getId).toList();
+        List<UUID> questionIds = items.stream().map(SessionItem::getQuestionId).distinct().toList();
+        Map<UUID, Question> questionsById = questionIds.isEmpty()
+                ? Map.of()
+                : questions.findAllById(questionIds).stream()
+                        .collect(Collectors.toMap(Question::getId, Function.identity()));
+        Map<UUID, UserAnswer> answersByItemId = itemIds.isEmpty()
+                ? Map.of()
+                : answers.findBySessionItemIdIn(itemIds).stream()
+                        .collect(Collectors.toMap(UserAnswer::getSessionItemId, Function.identity()));
+
         int answered = 0;
         int correct = 0;
         for (SessionItem item : items) {
-            Question question = questions.findById(item.getQuestionId()).orElse(null);
+            Question question = questionsById.get(item.getQuestionId());
             if (question == null || question.getType() != Question.Type.SINGLE_CHOICE) {
                 continue;
             }
-            if (answers.findBySessionItemId(item.getId()).isPresent()) {
+            if (answersByItemId.containsKey(item.getId())) {
                 answered++;
             }
             if (item.getFinalResult() == SessionItem.Result.PASS) {
@@ -233,20 +270,7 @@ public class PracticeDtoMapper {
     }
 
     public QuestionDtos.PublicQuestionView safeQuestion(final SessionItem item) {
-        Question question = questions.findById(item.getQuestionId()).orElse(null);
-        QuestionVersion version = versions.findById(item.getQuestionVersionId()).orElse(null);
-        if (question == null || version == null) {
-            return null;
-        }
-        return new QuestionDtos.PublicQuestionView(
-                question.getId(),
-                version.getId(),
-                question.getType().name(),
-                version.getStem(),
-                version.getDifficulty().name(),
-                questionSearchService.chapterRef(question.getChapterId()),
-                questionSearchService.tagRefs(version.getId()),
-                safeOptions(version.getId()));
+        return safeQuestion(item, loadContext(List.of(item)));
     }
 
     public UUID correctOptionId(final UUID versionId) {
@@ -258,13 +282,107 @@ public class PracticeDtoMapper {
     }
 
     public List<QuestionDtos.OptionSafe> safeOptions(final UUID versionId) {
-        return options.findByQuestionVersionIdOrderBySortOrderAsc(versionId)
-                .stream()
-                .map(option -> new QuestionDtos.OptionSafe(
-                        option.getId(),
-                        option.getOptionKey(),
-                        option.getContent()))
+        return safeOptions(options.findByQuestionVersionIdOrderBySortOrderAsc(versionId));
+    }
+
+    private QuestionDtos.PublicQuestionView safeQuestion(
+            final SessionItem item,
+            final LookupContext context) {
+        Question question = context.questionsById().get(item.getQuestionId());
+        QuestionVersion version = context.versionsById().get(item.getQuestionVersionId());
+        if (question == null || version == null) {
+            return null;
+        }
+        Chapter chapter = question.getChapterId() == null
+                ? null
+                : context.chaptersById().get(question.getChapterId());
+        QuestionDtos.ChapterRef chapterRef = chapter == null
+                ? null
+                : new QuestionDtos.ChapterRef(chapter.getId(), chapter.getName());
+        return new QuestionDtos.PublicQuestionView(
+                question.getId(),
+                version.getId(),
+                question.getType().name(),
+                version.getStem(),
+                version.getDifficulty().name(),
+                chapterRef,
+                context.tagsByVersionId().getOrDefault(version.getId(), List.of()),
+                safeOptions(context.optionsByVersionId().getOrDefault(version.getId(), List.of())));
+    }
+
+    private LookupContext loadContext(final List<SessionItem> items) {
+        if (items.isEmpty()) {
+            return LookupContext.empty();
+        }
+        List<UUID> itemIds = items.stream().map(SessionItem::getId).toList();
+        List<UUID> questionIds = items.stream()
+                .map(SessionItem::getQuestionId)
+                .distinct()
                 .toList();
+        List<UUID> versionIds = items.stream()
+                .map(SessionItem::getQuestionVersionId)
+                .distinct()
+                .toList();
+
+        Map<UUID, UserAnswer> answersByItemId = answers.findBySessionItemIdIn(itemIds).stream()
+                .collect(Collectors.toMap(UserAnswer::getSessionItemId, Function.identity()));
+        Map<UUID, SelfAssessment> assessmentsByItemId =
+                assessments.findBySessionItemIdIn(itemIds).stream()
+                        .collect(Collectors.toMap(
+                                SelfAssessment::getSessionItemId, Function.identity()));
+        Map<UUID, Question> questionsById = questions.findAllById(questionIds).stream()
+                .collect(Collectors.toMap(Question::getId, Function.identity()));
+        Map<UUID, QuestionVersion> versionsById = versions.findAllById(versionIds).stream()
+                .collect(Collectors.toMap(QuestionVersion::getId, Function.identity()));
+        Map<UUID, List<QuestionOption>> optionsByVersionId =
+                options.findByQuestionVersionIdInOrderBySortOrderAsc(versionIds).stream()
+                        .collect(Collectors.groupingBy(QuestionOption::getQuestionVersionId));
+
+        List<UUID> chapterIds = questionsById.values().stream()
+                .map(Question::getChapterId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+        Map<UUID, Chapter> chaptersById = chapterIds.isEmpty()
+                ? Map.of()
+                : chapters.findAllById(chapterIds).stream()
+                        .collect(Collectors.toMap(Chapter::getId, Function.identity()));
+
+        return new LookupContext(
+                answersByItemId,
+                assessmentsByItemId,
+                questionsById,
+                versionsById,
+                optionsByVersionId,
+                tagRefsByVersionId(versionIds),
+                chaptersById);
+    }
+
+    private Map<UUID, List<QuestionDtos.TagRef>> tagRefsByVersionId(
+            final List<UUID> versionIds) {
+        List<QuestionVersionTag> links = versionTags.findByIdQuestionVersionIdIn(versionIds);
+        if (links.isEmpty()) {
+            return Map.of();
+        }
+        List<UUID> tagIds = links.stream()
+                .map(link -> link.getId().getTagId())
+                .distinct()
+                .toList();
+        Map<UUID, Tag> tagsById = tags.findAllById(tagIds).stream()
+                .collect(Collectors.toMap(Tag::getId, Function.identity()));
+
+        Map<UUID, List<QuestionDtos.TagRef>> refs = new HashMap<>();
+        for (QuestionVersionTag link : links) {
+            Tag tag = tagsById.get(link.getId().getTagId());
+            if (tag == null) {
+                continue;
+            }
+            refs.computeIfAbsent(link.getId().getQuestionVersionId(), key -> new ArrayList<>())
+                    .add(new QuestionDtos.TagRef(tag.getId(), tag.getName()));
+        }
+        refs.values().forEach(list -> list.sort(
+                Comparator.comparing(QuestionDtos.TagRef::name)));
+        return refs;
     }
 
     private QuestionVersion currentVersion(final Question question) {
@@ -321,6 +439,30 @@ public class PracticeDtoMapper {
         return new PracticeDtos.BucketCounts(unseen, wrong, normal);
     }
 
+    private List<QuestionDtos.OptionSafe> safeOptions(final List<QuestionOption> versionOptions) {
+        return versionOptions.stream()
+                .map(option -> new QuestionDtos.OptionSafe(
+                        option.getId(),
+                        option.getOptionKey(),
+                        option.getContent()))
+                .toList();
+    }
+
     private record AnswerParts(UUID selectedOptionId, String text, int revision) {
+    }
+
+    private record LookupContext(
+            Map<UUID, UserAnswer> answersByItemId,
+            Map<UUID, SelfAssessment> assessmentsByItemId,
+            Map<UUID, Question> questionsById,
+            Map<UUID, QuestionVersion> versionsById,
+            Map<UUID, List<QuestionOption>> optionsByVersionId,
+            Map<UUID, List<QuestionDtos.TagRef>> tagsByVersionId,
+            Map<UUID, Chapter> chaptersById) {
+
+        private static LookupContext empty() {
+            return new LookupContext(
+                    Map.of(), Map.of(), Map.of(), Map.of(), Map.of(), Map.of(), Map.of());
+        }
     }
 }

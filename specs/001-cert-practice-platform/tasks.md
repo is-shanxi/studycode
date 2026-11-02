@@ -286,7 +286,7 @@
 - [X] T169 Use server `allowedActions` for submission readiness and send `Idempotency-Key` on self-assessment, with frontend unit tests.
 - [X] T170 Align the design document with actual frontend structure, correction-report module ownership, Pinia scope, import-failure handling, and candidate-counting wording.
 - [ ] T171 [P] Add a global unread notification badge via a Pinia store and unread-count refresh (future UX enhancement).
-- [ ] T172 [P] Batch practice session/result DTO queries to remove per-item N+1 lookups in `backend/java/src/main/java/com/certpractice/practice/PracticeDtoMapper.java` (performance debt; no unconfirmed acceptance threshold).
+- [X] T172 [P] Batch practice session/result DTO queries to remove per-item N+1 lookups in `backend/java/src/main/java/com/certpractice/practice/PracticeDtoMapper.java` (performance debt; no unconfirmed acceptance threshold).
 
 ---
 
