@@ -218,10 +218,14 @@ P2/P3 已补齐 V-11 至 V-15 的自动化与人工检查。真实模型联调�
 | 检查 | 命令 | 结果 |
 |---|---|---|
 | 统一检查 | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check.ps1` | 通过：前端 lint/format/typecheck/unit；Java 全量测试与 0 Checkstyle 违规；Python ruff/format/mypy/pytest |
-| Chromium E2E | `VITE_API_PROXY_TARGET=http://localhost:8081 npx playwright test` | 15/15 通过（独立数据库） |
+| Chromium E2E | `VITE_API_PROXY_TARGET=http://localhost:8081 npx playwright test` | 22/22 通过（独立数据库） |
 | Cookie 与本地存储 | `curl` 登录后检查 Cookie jar + 前端源码检索 | `SESSION` 带 `HttpOnly`；`XSRF-TOKEN` 可读；前端无 `localStorage` 使用 |
 
 > E2E 套件会创建进行中会话并执行举报/治理操作。重复执行前应重建数据库，否则残留的进行中会话会阻止 P2 讨论场景。
+
+`core-features.spec.ts` 补充的核心旅程：题库搜索与收藏、错题移出、记录详情、昵称/密码/注销、通用 AI 助手、题目创建/送审/发布、CSV 导入、目录标签维护，共 7 条。
+
+本轮 E2E 发现并修复了一个草稿编辑缺陷：替换选项、别名或标签时 Hibernate 先插入后删除，触发唯一索引冲突并返回 409。`QuestionAuthoringService.replaceContent` 现在在删除后显式 flush，并由 `QuestionDraftUpdateIntegrationTest` 覆盖。
 
 ### 10.2 验收场景执行结果
 

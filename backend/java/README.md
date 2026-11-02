@@ -97,6 +97,7 @@ SINGLE_BLANK,SUB-DEMO-01,CH-01,示例填空,,,,SYN,同步位|同步标志,MEDIUM
 
 - `AuthIntegrationTest`：注册角色升级、重复用户名、登录、越权、管理员自删、注销后会话失效。
 - `QuestionVersionIntegrationTest`：版本发布、历史版本保留、下线、拒绝与草稿删除。
+- `QuestionDraftUpdateIntegrationTest`：草稿替换选项、别名和标签时不会触发唯一索引冲突。
 - `PracticeIntegrationTest`：会话幂等/去重、提交校验、自评完成、错题激活、收藏、记录所有权、搜索交集与离线排除。
 - `AnswerVisibilityContractTest` / `P1RedactionTest`：答案字段与日志/错误响应脱敏。
 - `SecurityReviewIntegrationTest`：角色门禁、CSRF、退出/禁用后的会话失效、资源归属和答案裁剪复核。
