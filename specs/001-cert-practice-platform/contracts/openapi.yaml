@@ -851,6 +851,20 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+  /me/notifications/unread-count:
+    get:
+      tags: [notifications]
+      operationId: getUnreadNotificationCount
+      summary: 当前用户未读通知数量
+      responses:
+        '200':
+          description: 未读数量
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnreadNotificationCount'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /me/notifications/{notificationId}/read:
     parameters:
       - $ref: '#/components/parameters/NotificationIdPath'
@@ -3130,6 +3144,11 @@ components:
       required: [updated]
       properties:
         updated: {type: integer}
+    UnreadNotificationCount:
+      type: object
+      required: [unreadCount]
+      properties:
+        unreadCount: {type: integer, minimum: 0}
     AnnouncementRequest:
       type: object
       required: [title, body]

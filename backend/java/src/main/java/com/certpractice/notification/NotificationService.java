@@ -138,6 +138,12 @@ public class NotificationService {
         return new PageResponse<>(items, page.getNumber(), page.getSize(), page.getTotalElements());
     }
 
+    @Transactional(readOnly = true)
+    public NotificationDtos.UnreadCountResponse unreadCount(final UUID userId) {
+        return new NotificationDtos.UnreadCountResponse(
+                Math.toIntExact(notifications.countByRecipientUserIdAndReadAtIsNull(userId)));
+    }
+
     @Transactional
     public void markRead(final UUID userId, final UUID notificationId) {
         Notification notification = notifications.findById(notificationId)

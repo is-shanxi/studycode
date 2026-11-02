@@ -27,6 +27,9 @@ public final class NotificationDtos {
     public record MarkAllReadResponse(int updated) {
     }
 
+    public record UnreadCountResponse(int unreadCount) {
+    }
+
     public record AnnouncementRequest(
             @NotBlank @Size(max = 200) String title,
             @NotBlank @Size(max = 5_000) String body) {

@@ -7,6 +7,9 @@ import {
   markAllNotificationsRead,
   markNotificationRead,
 } from '@/features/community/api'
+import { useNotificationStore } from '@/features/notification/store'
+
+const notificationStore = useNotificationStore()
 
 const notifications = ref<PageResponse<NotificationView>>({
   items: [],
@@ -57,6 +60,7 @@ async function markRead(notification: NotificationView): Promise<void> {
   try {
     await markNotificationRead(notification.notificationId)
     await load(notifications.value.page)
+    await notificationStore.refresh()
   } catch (caught) {
     error.value = caught instanceof Error ? caught.message : '标记已读失败'
   }
@@ -67,6 +71,7 @@ async function markAll(): Promise<void> {
     const result = await markAllNotificationsRead()
     notice.value = `已将 ${result.updated} 条通知标记为已读。`
     await load(0)
+    await notificationStore.refresh()
   } catch (caught) {
     error.value = caught instanceof Error ? caught.message : '全部已读失败'
   }
@@ -74,6 +79,7 @@ async function markAll(): Promise<void> {
 
 onMounted(() => {
   void load()
+  void notificationStore.refresh()
 })
 </script>
 

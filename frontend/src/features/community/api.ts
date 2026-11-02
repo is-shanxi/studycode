@@ -9,6 +9,7 @@ import type {
   NotificationView,
   PageResponse,
   ReportCreated,
+  UnreadNotificationCount,
 } from '@/features/api/types'
 
 function queryString(params: Record<string, unknown>): string {
@@ -75,6 +76,10 @@ export function listNotifications(
   } = {},
 ): Promise<PageResponse<NotificationView>> {
   return apiClient.get<PageResponse<NotificationView>>(`/me/notifications${queryString(params)}`)
+}
+
+export function getUnreadNotificationCount(): Promise<UnreadNotificationCount> {
+  return apiClient.get<UnreadNotificationCount>('/me/notifications/unread-count')
 }
 
 export function markNotificationRead(notificationId: string): Promise<void> {

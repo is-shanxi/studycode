@@ -439,6 +439,10 @@ export interface MarkAllReadResponse {
   updated: number
 }
 
+export interface UnreadNotificationCount {
+  unreadCount: number
+}
+
 export interface AnnouncementResponse {
   recipientCount: number
 }
