@@ -85,6 +85,16 @@ Flyway applies schema and demo data when Java starts. Defaults in `application.y
 
 Local demo accounts: `admin` / `Admin@12345` (ADMIN), `student01` / `Student@12345` (USER).
 
+### One-click local startup (PowerShell)
+
+```powershell
+./scripts/start-dev.ps1            # PostgreSQL + Java + Python + Vite
+./scripts/stop-dev.ps1             # stops the app processes, keeps PostgreSQL
+./scripts/stop-dev.ps1 -IncludePostgres
+```
+
+`start-dev.ps1` creates `infra/env/.env.local` from the template when missing, builds the Java jar when it is missing or stale, prepares missing Python/frontend dependencies, starts each service in the background, and waits for its health endpoint. PID files and logs live under `.run/` (git-ignored). Healthy services already listening on the expected ports are reused and are not stopped by `stop-dev.ps1`.
+
 ### Frontend (run in `frontend/`)
 
 ```bash
