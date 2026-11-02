@@ -129,6 +129,8 @@ public final class PracticeDtos {
             String status,
             int requestedCount,
             int actualCount,
+            CompositionView composition,
+            List<String> allowedActions,
             Instant startedAt,
             Instant submittedAt,
             Instant completedAt,

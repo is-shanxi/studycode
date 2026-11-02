@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     )
 
     ai_provider: str = "mock"
+    ai_provider_base_url: str = Field(default="https://api.openai.com/v1", min_length=1)
     ai_model: str = "mock-model"
     ai_api_key: str = ""
     ai_request_timeout_seconds: int = Field(default=30, ge=1, le=300)

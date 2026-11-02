@@ -10,6 +10,7 @@ import { RouterLink, RouterView } from 'vue-router'
         <RouterLink to="/admin/dashboard">看板</RouterLink>
         <RouterLink to="/admin/catalog">目录标签</RouterLink>
         <RouterLink to="/admin/questions">题库管理</RouterLink>
+        <RouterLink to="/admin/ai">AI 生成</RouterLink>
         <RouterLink to="/admin/review">审核</RouterLink>
         <RouterLink to="/admin/import">批量导入</RouterLink>
         <RouterLink to="/admin/users">用户管理</RouterLink>

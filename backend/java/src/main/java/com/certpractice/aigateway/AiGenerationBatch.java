@@ -43,6 +43,9 @@ public class AiGenerationBatch {
     @Column(name = "target_count", nullable = false)
     private int targetCount;
 
+    @Column(name = "difficulty", length = 16)
+    private String difficulty;
+
     @Column(name = "model_name", nullable = false, length = 64)
     private String modelName;
 

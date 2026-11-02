@@ -55,6 +55,54 @@ public class QuestionSelectionService {
             final PracticeDtos.Filters filters,
             final int requestedCount,
             final PracticeSession.Mode mode) {
+        CandidatePool pool = loadPool(userId, filters, requestedCount, mode);
+        List<Candidate> candidates = pool.candidates();
+        int[] quotas = quotas(requestedCount);
+        Random random = new Random(pool.seed());
+        List<Candidate> selected = new ArrayList<>();
+        selected.addAll(pick(candidatesOfBucket(candidates, Bucket.UNSEEN), quotas[0], random));
+        selected.addAll(pick(candidatesOfBucket(candidates, Bucket.WRONG), quotas[1], random));
+        selected.addAll(pick(candidatesOfBucket(candidates, Bucket.NORMAL), quotas[2], random));
+
+        if (selected.size() < Math.min(requestedCount, candidates.size())) {
+            Set<UUID> chosen = new HashSet<>();
+            selected.forEach(candidate -> chosen.add(candidate.questionId()));
+            List<Candidate> remaining = candidates.stream()
+                    .filter(candidate -> !chosen.contains(candidate.questionId()))
+                    .sorted(Comparator.comparing(Candidate::questionId))
+                    .toList();
+            selected.addAll(pick(remaining,
+                    Math.min(requestedCount, candidates.size()) - selected.size(), random));
+        }
+
+        if (selected.isEmpty()) {
+            throw new ApiException(ErrorCode.NO_ELIGIBLE_QUESTIONS, "No eligible questions match the filters");
+        }
+
+        int unseenCount = countBucket(selected, Bucket.UNSEEN);
+        int wrongCount = countBucket(selected, Bucket.WRONG);
+        int normalCount = countBucket(selected, Bucket.NORMAL);
+
+        Map<String, Object> ruleSnapshot = new LinkedHashMap<>(pool.baseSnapshot());
+        ruleSnapshot.put("quotas", Map.of("unseen", quotas[0], "wrong", quotas[1], "normal", quotas[2]));
+        ruleSnapshot.put("actual", Map.of(
+                "unseen", unseenCount, "wrong", wrongCount, "normal", normalCount));
+        ruleSnapshot.put("fallback", selected.size() < requestedCount);
+
+        return new SelectionResult(
+                toSelected(selected), unseenCount, wrongCount, normalCount, pool.seed(), ruleSnapshot);
+    }
+
+    /**
+     * Loads and classifies the legal candidate pool once so both normal and
+     * self-test selection share the same history weights and source typing.
+     */
+    @Transactional(readOnly = true)
+    public CandidatePool loadPool(
+            final UUID userId,
+            final PracticeDtos.Filters filters,
+            final int requestedCount,
+            final PracticeSession.Mode mode) {
         List<Candidate> candidates = loadCandidates(filters);
         if (candidates.isEmpty()) {
             throw new ApiException(ErrorCode.NO_ELIGIBLE_QUESTIONS, "No eligible questions match the filters");
@@ -69,86 +117,68 @@ public class QuestionSelectionService {
         wrongQuestions.findActiveSince(userId, since)
                 .forEach(wrong -> wrongIds.add(wrong.getQuestionId()));
         Set<UUID> answeredIds = loadAnsweredQuestionIds(userId, since);
+        Set<UUID> aiVariantVersionIds = aiVariants.findAllVersionIds();
 
-        List<Candidate> unseen = new ArrayList<>();
-        List<Candidate> wrong = new ArrayList<>();
-        List<Candidate> normal = new ArrayList<>();
+        List<Candidate> classified = new ArrayList<>(candidates.size());
         for (Candidate candidate : candidates) {
-            if (wrongIds.contains(candidate.questionId())) {
-                wrong.add(new Candidate(candidate.questionId(), candidate.versionId(),
-                        candidate.difficulty(), Bucket.WRONG));
-            } else if (answeredIds.contains(candidate.questionId())) {
-                normal.add(new Candidate(candidate.questionId(), candidate.versionId(),
-                        candidate.difficulty(), Bucket.NORMAL));
-            } else {
-                unseen.add(new Candidate(candidate.questionId(), candidate.versionId(),
-                        candidate.difficulty(), Bucket.UNSEEN));
-            }
-        }
-
-        int[] quotas = quotas(requestedCount);
-        long seed = ThreadLocalRandom.current().nextLong();
-        Random random = new Random(seed);
-        List<Candidate> selected = new ArrayList<>();
-        selected.addAll(pick(unseen, quotas[0], random));
-        selected.addAll(pick(wrong, quotas[1], random));
-        selected.addAll(pick(normal, quotas[2], random));
-
-        if (selected.size() < Math.min(requestedCount, candidates.size())) {
-            Set<UUID> chosen = new HashSet<>();
-            selected.forEach(candidate -> chosen.add(candidate.questionId()));
-            List<Candidate> remaining = candidates.stream()
-                    .filter(candidate -> !chosen.contains(candidate.questionId()))
-                    .sorted(Comparator.comparing(Candidate::questionId))
-                    .toList();
-            selected.addAll(pick(remaining, Math.min(requestedCount, candidates.size()) - selected.size(), random));
-        }
-
-        if (selected.isEmpty()) {
-            throw new ApiException(ErrorCode.NO_ELIGIBLE_QUESTIONS, "No eligible questions match the filters");
-        }
-
-        List<SelectedQuestion> items = new ArrayList<>();
-        int ordinal = 1;
-        int unseenCount = 0;
-        int wrongCount = 0;
-        int normalCount = 0;
-        for (Candidate candidate : selected) {
-            String sourceType = aiVariants.existsById(candidate.versionId())
+            String sourceType = aiVariantVersionIds.contains(candidate.versionId())
                     ? SessionItem.SourceType.AI_VARIANT.name()
                     : SessionItem.SourceType.ORIGINAL.name();
-            items.add(new SelectedQuestion(
-                    candidate.questionId(),
-                    candidate.versionId(),
-                    sourceType,
-                    candidate.bucket().name(),
-                    ordinal++));
-            switch (candidate.bucket()) {
-                case UNSEEN -> unseenCount++;
-                case WRONG -> wrongCount++;
-                case NORMAL -> normalCount++;
-                default -> {
-                }
-            }
+            Bucket bucket = wrongIds.contains(candidate.questionId())
+                    ? Bucket.WRONG
+                    : answeredIds.contains(candidate.questionId()) ? Bucket.NORMAL : Bucket.UNSEEN;
+            classified.add(new Candidate(
+                    candidate.questionId(), candidate.versionId(), candidate.difficulty(),
+                    bucket, sourceType));
         }
 
-        Map<String, Object> ruleSnapshot = new LinkedHashMap<>();
-        ruleSnapshot.put("version", 1);
-        ruleSnapshot.put("mode", mode.name());
-        ruleSnapshot.put("requestedCount", requestedCount);
-        ruleSnapshot.put("historyDays", historyDays);
-        ruleSnapshot.put("seed", seed);
-        ruleSnapshot.put("bucketWeights", Map.of(
+        long seed = ThreadLocalRandom.current().nextLong();
+        Map<String, Object> baseSnapshot = new LinkedHashMap<>();
+        baseSnapshot.put("version", 1);
+        baseSnapshot.put("mode", mode.name());
+        baseSnapshot.put("requestedCount", requestedCount);
+        baseSnapshot.put("historyDays", historyDays);
+        baseSnapshot.put("seed", seed);
+        baseSnapshot.put("bucketWeights", Map.of(
                 "unseen", selection.getUnseenWeight(),
                 "wrong", selection.getWrongWeight(),
                 "normal", selection.getNormalWeight()));
-        ruleSnapshot.put("difficultyWeights", selection.difficultyWeights());
-        ruleSnapshot.put("maxCandidates", selection.getMaxCandidates());
-        ruleSnapshot.put("quotas", Map.of("unseen", quotas[0], "wrong", quotas[1], "normal", quotas[2]));
-        ruleSnapshot.put("actual", Map.of("unseen", unseenCount, "wrong", wrongCount, "normal", normalCount));
-        ruleSnapshot.put("fallback", selected.size() < requestedCount);
+        baseSnapshot.put("difficultyWeights", selection.difficultyWeights());
+        baseSnapshot.put("maxCandidates", selection.getMaxCandidates());
+        return new CandidatePool(classified, historyDays, seed, baseSnapshot);
+    }
 
-        return new SelectionResult(items, unseenCount, wrongCount, normalCount, seed, ruleSnapshot);
+    /**
+     * Weighted sampling used by the self-test composition service. The caller
+     * owns the random source so the seed remains part of the rule snapshot.
+     */
+    public List<Candidate> pickWeighted(
+            final List<Candidate> pool,
+            final int count,
+            final Random random) {
+        return pick(pool, count, random);
+    }
+
+    private List<Candidate> candidatesOfBucket(final List<Candidate> candidates, final Bucket bucket) {
+        return candidates.stream().filter(candidate -> candidate.bucket() == bucket).toList();
+    }
+
+    private int countBucket(final List<Candidate> candidates, final Bucket bucket) {
+        return (int) candidates.stream().filter(candidate -> candidate.bucket() == bucket).count();
+    }
+
+    private List<SelectedQuestion> toSelected(final List<Candidate> selected) {
+        List<SelectedQuestion> items = new ArrayList<>(selected.size());
+        int ordinal = 1;
+        for (Candidate candidate : selected) {
+            items.add(new SelectedQuestion(
+                    candidate.questionId(),
+                    candidate.versionId(),
+                    candidate.sourceType(),
+                    candidate.bucket().name(),
+                    ordinal++));
+        }
+        return items;
     }
 
     private List<Candidate> loadCandidates(final PracticeDtos.Filters filters) {
@@ -198,7 +228,8 @@ public class QuestionSelectionService {
                     tuple.get(0, UUID.class),
                     tuple.get(1, UUID.class),
                     tuple.get(2, String.class),
-                    Bucket.UNSEEN));
+                    Bucket.UNSEEN,
+                    null));
         }
         return candidates;
     }
@@ -300,17 +331,25 @@ public class QuestionSelectionService {
         return quotas;
     }
 
-    private enum Bucket {
+    public enum Bucket {
         UNSEEN,
         WRONG,
         NORMAL
     }
 
-    private record Candidate(
+    public record Candidate(
             UUID questionId,
             UUID versionId,
             String difficulty,
-            Bucket bucket) {
+            Bucket bucket,
+            String sourceType) {
+    }
+
+    public record CandidatePool(
+            List<Candidate> candidates,
+            int historyDays,
+            long seed,
+            Map<String, Object> baseSnapshot) {
     }
 
     public record SelectedQuestion(

@@ -2,7 +2,7 @@
 
 Java 21 + Spring Boot 3 模块化单体，是 PostgreSQL 中业务数据的唯一写入方。
 
-## P1 已接入能力
+## 已接入能力
 
 - 账号：注册、登录、退出、资料与密码修改、普通用户软删除匿名化；管理员不能自行注销。
 - 题库：目录树、标签、关键词/多标签交集搜索、不可变题目版本、草稿编辑、送审、发布、下线。
@@ -11,6 +11,10 @@ Java 21 + Spring Boot 3 模块化单体，是 PostgreSQL 中业务数据的唯�
 - 学习状态：历史记录（固定当时版本）、收藏、错题加入/移出/再次失败重新激活。
 - 导入：CSV/XLSX 预览校验、错误行展示、整批确认后创建草稿。
 - 安全：服务端会话 + HttpOnly Cookie + CSRF；答案安全 DTO；管理端角色门禁；审计日志；登录失败限流/锁定；CSP 与上传大小限制。
+- 自测：默认 6:4 原题/AI 变式，变式不足用原题补齐，合法题不足按实际题量；规则快照固定创建时的比例、种子和组成。
+- AI 辅导：通用与本题会话；本题仅允许本人已完成会话；官方答案解析默认不进入上下文；个人日额度、会话轮次和团队预算由服务端原子控制。
+- AI 生成：数据库租约调度、超时重试上限、候选结构/重复校验、人工审核后转换为不可变已发布版本。
+- AI 配置：管理员通过 `system_config_version` 维护带版本的额度与上下文策略。
 
 ## 命令
 
@@ -51,6 +55,9 @@ Flyway 启动时自动迁移并加载演示数据。
 | 记录与收藏 | `/api/v1/me/records`、`/api/v1/me/favorites`、`/api/v1/me/wrong-questions` |
 | 管理题库 | `/api/v1/admin/questions`、`/api/v1/admin/question-versions/{id}/...` |
 | 批量导入 | `/api/v1/admin/question-imports` |
+| 自测 | `POST /api/v1/practice-sessions`（`mode=SELF_TEST` + `composition`） |
+| AI 辅导 | `/api/v1/ai/quota`、`/api/v1/ai/conversations`、`.../messages` |
+| 管理 AI | `/api/v1/admin/ai/generation-batches`、`.../generation-candidates/{id}/review`、`/api/v1/admin/configs` |
 
 写操作需要 `X-XSRF-TOKEN`；创建会话、提交和自评支持 `Idempotency-Key`。
 
@@ -76,3 +83,7 @@ SINGLE_BLANK,SUB-DEMO-01,CH-01,示例填空,,,,SYN,同步位|同步标志,MEDIUM
 - `AnswerVisibilityContractTest` / `P1RedactionTest`：答案字段与日志/错误响应脱敏。
 - `QuestionImportIntegrationTest`：CSV 错误预览、确认导入、重复题、XLSX。
 - `PracticePerformanceTest`：记录 P1 响应时间与语句数基线，不设未确认的产品阈值。
+- `SelfTestIntegrationTest`：6:4 组成、变式不足回退、实际题量、快照与未审核变式排除。
+- `AiGateIntegrationTest` / `AiQuotaConcurrencyTest`：本题 AI 门禁、上下文最小化、并发额度/轮次/预算与幂等。
+- `AiGenerationIntegrationTest` / `AiGenerationRetryTest`：候选校验、重复拒绝、审核转换、配置版本与重试上限。
+- `OpenApiContractTest`：Spring MVC 路由与 `contracts/openapi.yaml` 双向比对。

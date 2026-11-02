@@ -19,11 +19,20 @@ export interface SessionItemView {
   question: PublicQuestionView
 }
 
+export interface CompositionView {
+  original: number
+  aiVariant: number
+  buckets: { unseen: number; wrong: number; normal: number }
+}
+
 export interface SessionView {
   sessionId: string
   mode: string
   status: string
   actualCount: number
+  requestedCount?: number
+  composition?: CompositionView
+  allowedActions?: string[]
   items: SessionItemView[]
 }
 
@@ -38,7 +47,12 @@ export interface ResultItemView {
 
 export interface ResultView {
   sessionId: string
+  mode: string
   status: string
+  requestedCount: number
+  actualCount: number
+  composition?: CompositionView
+  allowedActions?: string[]
   items: ResultItemView[]
 }
 

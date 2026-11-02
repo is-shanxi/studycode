@@ -59,6 +59,21 @@ export const appRoutes: RouteRecordRaw[] = [
         component: () => import('@/app/pages/PracticeResultPage.vue'),
       },
       {
+        path: 'selftest',
+        name: 'app-selftest',
+        component: () => import('@/app/pages/SelfTestPage.vue'),
+      },
+      {
+        path: 'selftest/:sessionId/result',
+        name: 'app-selftest-result',
+        component: () => import('@/app/pages/SelfTestResultPage.vue'),
+      },
+      {
+        path: 'assistant',
+        name: 'app-assistant',
+        component: () => import('@/app/pages/AiAssistantPage.vue'),
+      },
+      {
         path: 'account',
         name: 'app-account',
         component: () => import('@/app/pages/AccountPage.vue'),
