@@ -29,6 +29,10 @@ spring:
     jdbc:
       initialize-schema: never
       table-name: SPRING_SESSION
+  servlet:
+    multipart:
+      max-file-size: ${UPLOAD_MAX_FILE_SIZE:10MB}
+      max-request-size: ${UPLOAD_MAX_REQUEST_SIZE:12MB}
   jackson:
     default-property-inclusion: non_null
     serialization:
@@ -84,3 +88,11 @@ app:
       max-candidates: 20000
   security:
     cookie-secure: ${SESSION_COOKIE_SECURE:false}
+    login-throttle:
+      enabled: ${LOGIN_THROTTLE_ENABLED:true}
+      max-failures: ${LOGIN_THROTTLE_MAX_FAILURES:5}
+      failure-window: ${LOGIN_THROTTLE_FAILURE_WINDOW:15m}
+      lock-duration: ${LOGIN_THROTTLE_LOCK_DURATION:15m}
+  question:
+    import:
+      max-file-bytes: ${QUESTION_IMPORT_MAX_FILE_BYTES:10485760}

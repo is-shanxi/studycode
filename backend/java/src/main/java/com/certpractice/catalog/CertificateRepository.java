@@ -11,4 +11,10 @@ public interface CertificateRepository extends JpaRepository<Certificate, UUID> 
     Optional<Certificate> findByCode(String code);
 
     List<Certificate> findByStatusOrderBySortOrderAsc(CatalogStatus status);
+
+    List<Certificate> findAllByOrderBySortOrderAscCodeAsc();
+
+    boolean existsByCode(String code);
+
+    boolean existsByCodeAndIdNot(String code, UUID id);
 }

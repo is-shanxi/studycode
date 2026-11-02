@@ -517,3 +517,65 @@ export interface AuditLogView {
   traceId?: string
   createdAt: string
 }
+
+export type CatalogStatus = 'ACTIVE' | 'INACTIVE'
+
+export interface AdminCertificateView {
+  id: string
+  code: string
+  name: string
+  status: CatalogStatus
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AdminSubjectView {
+  id: string
+  certificateId: string
+  code: string
+  name: string
+  status: CatalogStatus
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AdminChapterView {
+  id: string
+  subjectId: string
+  code: string
+  name: string
+  status: CatalogStatus
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AdminTagView {
+  id: string
+  name: string
+  normalizedName: string
+  status: CatalogStatus
+  createdAt: string
+}
+
+export interface CatalogEntryPayload {
+  code: string
+  name: string
+  status?: CatalogStatus
+  sortOrder?: number
+}
+
+export interface SubjectCreatePayload extends CatalogEntryPayload {
+  certificateId: string
+}
+
+export interface ChapterCreatePayload extends CatalogEntryPayload {
+  subjectId: string
+}
+
+export interface TagPayload {
+  name: string
+  status?: CatalogStatus
+}

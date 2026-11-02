@@ -1,10 +1,16 @@
 import { apiClient } from '@/features/http/client'
 import type {
+  AdminCertificateView,
+  AdminChapterView,
   AdminQuestionDetail,
   AdminQuestionSummary,
+  AdminSubjectView,
+  AdminTagView,
   AdminUserView,
   AnnouncementResponse,
   AuditLogView,
+  CatalogEntryPayload,
+  ChapterCreatePayload,
   CreateQuestionPayload,
   DashboardView,
   ImportBatchView,
@@ -14,6 +20,8 @@ import type {
   ResetPasswordPayload,
   ResolveReportPayload,
   ResolveReportResponse,
+  SubjectCreatePayload,
+  TagPayload,
   UpdateDraftPayload,
 } from '@/features/api/types'
 
@@ -182,4 +190,68 @@ export function sendAnnouncement(payload: {
   body: string
 }): Promise<AnnouncementResponse> {
   return apiClient.post<AnnouncementResponse>('/admin/notifications/announcements', payload)
+}
+
+export function listAdminCertificates(): Promise<AdminCertificateView[]> {
+  return apiClient.get<AdminCertificateView[]>('/admin/catalog/certificates')
+}
+
+export function createAdminCertificate(
+  payload: CatalogEntryPayload,
+): Promise<AdminCertificateView> {
+  return apiClient.post<AdminCertificateView>('/admin/catalog/certificates', payload)
+}
+
+export function updateAdminCertificate(
+  certificateId: string,
+  payload: CatalogEntryPayload,
+): Promise<AdminCertificateView> {
+  return apiClient.put<AdminCertificateView>(
+    `/admin/catalog/certificates/${certificateId}`,
+    payload,
+  )
+}
+
+export function listAdminSubjects(certificateId?: string): Promise<AdminSubjectView[]> {
+  return apiClient.get<AdminSubjectView[]>(
+    `/admin/catalog/subjects${queryString({ certificateId })}`,
+  )
+}
+
+export function createAdminSubject(payload: SubjectCreatePayload): Promise<AdminSubjectView> {
+  return apiClient.post<AdminSubjectView>('/admin/catalog/subjects', payload)
+}
+
+export function updateAdminSubject(
+  subjectId: string,
+  payload: CatalogEntryPayload,
+): Promise<AdminSubjectView> {
+  return apiClient.put<AdminSubjectView>(`/admin/catalog/subjects/${subjectId}`, payload)
+}
+
+export function listAdminChapters(subjectId?: string): Promise<AdminChapterView[]> {
+  return apiClient.get<AdminChapterView[]>(`/admin/catalog/chapters${queryString({ subjectId })}`)
+}
+
+export function createAdminChapter(payload: ChapterCreatePayload): Promise<AdminChapterView> {
+  return apiClient.post<AdminChapterView>('/admin/catalog/chapters', payload)
+}
+
+export function updateAdminChapter(
+  chapterId: string,
+  payload: CatalogEntryPayload,
+): Promise<AdminChapterView> {
+  return apiClient.put<AdminChapterView>(`/admin/catalog/chapters/${chapterId}`, payload)
+}
+
+export function listAdminTags(): Promise<AdminTagView[]> {
+  return apiClient.get<AdminTagView[]>('/admin/catalog/tags')
+}
+
+export function createAdminTag(payload: TagPayload): Promise<AdminTagView> {
+  return apiClient.post<AdminTagView>('/admin/catalog/tags', payload)
+}
+
+export function updateAdminTag(tagId: string, payload: TagPayload): Promise<AdminTagView> {
+  return apiClient.put<AdminTagView>(`/admin/catalog/tags/${tagId}`, payload)
 }

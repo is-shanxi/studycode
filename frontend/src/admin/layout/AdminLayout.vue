@@ -8,6 +8,7 @@ import { RouterLink, RouterView } from 'vue-router'
       <RouterLink class="brand" to="/admin">考证刷题平台 · 管理端</RouterLink>
       <nav class="admin-nav" aria-label="管理导航">
         <RouterLink to="/admin/dashboard">看板</RouterLink>
+        <RouterLink to="/admin/catalog">目录标签</RouterLink>
         <RouterLink to="/admin/questions">题库管理</RouterLink>
         <RouterLink to="/admin/review">审核</RouterLink>
         <RouterLink to="/admin/import">批量导入</RouterLink>

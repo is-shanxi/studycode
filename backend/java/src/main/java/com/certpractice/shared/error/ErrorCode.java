@@ -11,7 +11,9 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "Invalid request"),
     VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "Validation failed"),
+    UPLOAD_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "Upload too large"),
     UNAUTHENTICATED(HttpStatus.UNAUTHORIZED, "Unauthenticated"),
+    LOGIN_LOCKED(HttpStatus.TOO_MANY_REQUESTS, "Login temporarily locked"),
     FORBIDDEN(HttpStatus.FORBIDDEN, "Forbidden"),
     ADMIN_CANNOT_DELETE_SELF(HttpStatus.FORBIDDEN, "Administrator cannot delete self"),
     NOT_FOUND(HttpStatus.NOT_FOUND, "Not found"),

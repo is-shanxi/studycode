@@ -11,4 +11,10 @@ public interface TagRepository extends JpaRepository<Tag, UUID> {
     Optional<Tag> findByNormalizedName(String normalizedName);
 
     List<Tag> findByStatusOrderByNameAsc(CatalogStatus status);
+
+    List<Tag> findAllByOrderByNameAsc();
+
+    boolean existsByNormalizedName(String normalizedName);
+
+    boolean existsByNormalizedNameAndIdNot(String normalizedName, UUID id);
 }
