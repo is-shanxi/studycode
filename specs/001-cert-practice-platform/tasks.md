@@ -258,7 +258,7 @@
 **Purpose**: 收口跨故事安全性、性能、文档和完整验收。
 
 - [X] T150 [P] Complete and validate OpenAPI 3.1 coverage for public and admin APIs in `speckit/specs/001-cert-practice-platform/contracts/openapi.yaml`
-- [ ] T151 [P] Run a full authorization, CSRF, session invalidation and answer-leak review across `backend/java/src/test/java/com/certpractice/security/`
+- [X] T151 [P] Run a full authorization, CSRF, session invalidation and answer-leak review across `backend/java/src/test/java/com/certpractice/security/`
 - [ ] T152 Review and tune PostgreSQL indexes and query plans for search, practice history, dashboards and selection candidate counting in `backend/java/src/main/resources/db/migration/V7__index_tuning.sql`
 - [ ] T153 [P] Validate responsive engineering baselines at 360 px, 768 px and 1280 px in `frontend/tests/e2e/responsive.spec.ts` without treating them as final product acceptance until confirmed
 - [ ] T154 Review structured-log redaction and health checks in `backend/java/src/main/java/com/certpractice/shared/observability/` and `backend/python/app/api/health.py`
