@@ -15,7 +15,7 @@
 | Docker Desktop / Engine | 支持 Compose v2 |
 | PostgreSQL 客户端 | 可选，用于排查 |
 
-浏览器验证使用 Chrome、Edge 或 Firefox 最近两个主要版本。
+自动化 E2E 仅在 Chromium 中运行；人工验证可按需使用 Chrome、Edge 或 Firefox。
 
 ## 2. 服务与端口
 
@@ -211,18 +211,17 @@ P2/P3 已补齐 V-11 至 V-15 的自动化与人工检查。真实模型联调�
 
 ## 10. 2026-11-02 执行记录
 
-**环境**：Windows 11、Docker Desktop 29.5.2、PostgreSQL 16.15、Java 21.0.3、Python 3.13.9（`.venv`）、Playwright Chromium/Firefox。
+**环境**：Windows 11、Docker Desktop 29.5.2、PostgreSQL 16.15、Java 21.0.3、Python 3.13.9（`.venv`）、Playwright Chromium。
 
 ### 10.1 自动化检查
 
 | 检查 | 命令 | 结果 |
 |---|---|---|
 | 统一检查 | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check.ps1` | 通过：前端 lint/format/typecheck/unit；Java 全量测试与 0 Checkstyle 违规；Python ruff/format/mypy/pytest |
-| Chromium E2E | `VITE_API_PROXY_TARGET=http://localhost:8081 npx playwright test --project=chromium` | 15/15 通过（独立数据库） |
-| Firefox E2E | `VITE_API_PROXY_TARGET=http://localhost:8082 npx playwright test --project=firefox` | 15/15 通过（独立数据库） |
+| Chromium E2E | `VITE_API_PROXY_TARGET=http://localhost:8081 npx playwright test` | 15/15 通过（独立数据库） |
 | Cookie 与本地存储 | `curl` 登录后检查 Cookie jar + 前端源码检索 | `SESSION` 带 `HttpOnly`；`XSRF-TOKEN` 可读；前端无 `localStorage` 使用 |
 
-> E2E 套件会创建进行中会话并执行举报/治理操作。重复执行或让 Chromium 与 Firefox 共用同一数据库时，残留的进行中会话会阻止 P2 讨论场景；本轮为每个浏览器使用独立数据库验证，重建数据库后即可复跑。
+> E2E 套件会创建进行中会话并执行举报/治理操作。重复执行前应重建数据库，否则残留的进行中会话会阻止 P2 讨论场景。
 
 ### 10.2 验收场景执行结果
 
