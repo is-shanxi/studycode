@@ -49,6 +49,11 @@ class NotificationIntegrationTest extends P2TestSupport {
         UUID notificationId = UUID.fromString(
                 readJson(listed).get("items").get(0).get("notificationId").asText());
 
+        mockMvc.perform(get("/api/v1/me/notifications/unread-count")
+                        .with(appUser(authorId, usernameFor(authorId))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.unreadCount").value(1));
+
         mockMvc.perform(get("/api/v1/me/notifications")
                         .queryParam("unreadOnly", "true")
                         .with(appUser(authorId, usernameFor(authorId))))
@@ -65,11 +70,21 @@ class NotificationIntegrationTest extends P2TestSupport {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items[0].readAt").exists());
 
+        mockMvc.perform(get("/api/v1/me/notifications/unread-count")
+                        .with(appUser(authorId, usernameFor(authorId))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.unreadCount").value(0));
+
         mockMvc.perform(get("/api/v1/me/notifications")
                         .queryParam("unreadOnly", "true")
                         .with(appUser(authorId, usernameFor(authorId))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items.length()").value(0));
+
+        mockMvc.perform(get("/api/v1/me/notifications/unread-count")
+                        .with(appUser(outsiderId, usernameFor(outsiderId))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.unreadCount").value(0));
 
         mockMvc.perform(put("/api/v1/me/notifications/{notificationId}/read", notificationId)
                         .with(appUser(outsiderId, usernameFor(outsiderId)))
@@ -77,6 +92,11 @@ class NotificationIntegrationTest extends P2TestSupport {
                 .andExpect(status().isNotFound());
 
         createComment(replierId, postId, null, null, "再回复一次以测试全部已读。");
+        mockMvc.perform(get("/api/v1/me/notifications/unread-count")
+                        .with(appUser(authorId, usernameFor(authorId))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.unreadCount").value(1));
+
         mockMvc.perform(put("/api/v1/me/notifications/read-all")
                         .with(appUser(authorId, usernameFor(authorId)))
                         .with(csrf()))
@@ -88,6 +108,11 @@ class NotificationIntegrationTest extends P2TestSupport {
                         .with(appUser(authorId, usernameFor(authorId))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.items.length()").value(0));
+
+        mockMvc.perform(get("/api/v1/me/notifications/unread-count")
+                        .with(appUser(authorId, usernameFor(authorId))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.unreadCount").value(0));
     }
 
     @Test

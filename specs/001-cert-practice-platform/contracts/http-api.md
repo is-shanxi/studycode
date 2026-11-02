@@ -359,6 +359,7 @@ difficulty, type, page, size
 | 方法 | 路径 | 说明 |
 |---|---|---|
 | GET | `/me/notifications` | 分页列表，可按已读筛选 |
+| GET | `/me/notifications/unread-count` | 当前用户未读通知数量，用于全局角标 |
 | PUT | `/me/notifications/{id}/read` | 标记已读 |
 | PUT | `/me/notifications/read-all` | 全部标记已读 |
 

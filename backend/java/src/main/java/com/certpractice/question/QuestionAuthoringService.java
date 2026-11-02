@@ -237,6 +237,9 @@ public class QuestionAuthoringService {
             final Question.Type type) {
         if (optionInputs != null) {
             options.deleteByQuestionVersionId(version.getId());
+            // Hibernate flushes inserts before deletes; flush the removal first so
+            // re-inserting the same option keys does not violate unique indexes.
+            options.flush();
             List<QuestionDtos.OptionInput> inputs = optionInputs;
             for (int index = 0; index < inputs.size(); index++) {
                 QuestionDtos.OptionInput input = inputs.get(index);
@@ -251,6 +254,7 @@ public class QuestionAuthoringService {
         }
         if (aliasInputs != null) {
             aliases.deleteByQuestionVersionId(version.getId());
+            aliases.flush();
             Set<String> normalizedSeen = new HashSet<>();
             for (String raw : aliasInputs) {
                 if (raw == null || raw.isBlank()) {
@@ -271,6 +275,7 @@ public class QuestionAuthoringService {
         }
         if (tagIds != null) {
             versionTags.deleteByIdQuestionVersionId(version.getId());
+            versionTags.flush();
             List<UUID> uniqueTagIds = tagIds.stream().distinct().toList();
             List<Tag> found = tags.findAllById(uniqueTagIds);
             Guard.require(found.size() == uniqueTagIds.size(), ErrorCode.VALIDATION_FAILED,

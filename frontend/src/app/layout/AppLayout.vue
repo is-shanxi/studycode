@@ -1,15 +1,40 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import { RouterLink, RouterView, useRouter } from 'vue-router'
+import { computed, onBeforeUnmount, onMounted, watch } from 'vue'
+import { RouterLink, RouterView, useRoute, useRouter } from 'vue-router'
 
 import { useSessionStore } from '@/features/auth/store'
+import { useNotificationStore } from '@/features/notification/store'
 
 const session = useSessionStore()
+const notifications = useNotificationStore()
 const router = useRouter()
+const route = useRoute()
 const displayName = computed(() => session.user?.nickname ?? session.user?.username ?? '')
+let refreshTimer: number | undefined
+
+onMounted(() => {
+  void notifications.refresh()
+  refreshTimer = window.setInterval(() => {
+    void notifications.refresh()
+  }, 60_000)
+})
+
+onBeforeUnmount(() => {
+  if (refreshTimer !== undefined) {
+    window.clearInterval(refreshTimer)
+  }
+})
+
+watch(
+  () => route.fullPath,
+  () => {
+    void notifications.refresh()
+  },
+)
 
 async function signOut(): Promise<void> {
   await session.logout()
+  notifications.clear()
   await router.push({ name: 'app-login' })
 }
 </script>
@@ -25,7 +50,16 @@ async function signOut(): Promise<void> {
         <RouterLink to="/app/records">记录</RouterLink>
         <RouterLink to="/app/favorites">收藏</RouterLink>
         <RouterLink to="/app/wrong-questions">错题</RouterLink>
-        <RouterLink to="/app/notifications">通知</RouterLink>
+        <RouterLink class="notification-link" to="/app/notifications">
+          通知
+          <span
+            v-if="notifications.unreadCount > 0"
+            class="notification-badge"
+            data-testid="unread-notification-badge"
+          >
+            {{ notifications.unreadCount > 99 ? '99+' : notifications.unreadCount }}
+          </span>
+        </RouterLink>
         <RouterLink to="/app/account">个人中心</RouterLink>
         <RouterLink v-if="session.isAdmin" to="/admin">管理端</RouterLink>
         <span v-if="displayName" class="user-name">{{ displayName }}</span>
@@ -72,6 +106,24 @@ async function signOut(): Promise<void> {
 
 .app-nav a {
   text-decoration: none;
+}
+
+.notification-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.notification-badge {
+  min-width: 1.15rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.15rem;
+  text-align: center;
 }
 
 .user-name {

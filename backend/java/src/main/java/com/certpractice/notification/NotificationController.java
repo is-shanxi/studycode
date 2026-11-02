@@ -41,6 +41,11 @@ public class NotificationController {
                 currentUserService.requireUserId(), unreadOnly, new PageQuery(page, size));
     }
 
+    @GetMapping("/unread-count")
+    public NotificationDtos.UnreadCountResponse unreadCount() {
+        return notificationService.unreadCount(currentUserService.requireUserId());
+    }
+
     @PutMapping("/{notificationId}/read")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void markRead(@PathVariable final UUID notificationId) {

@@ -58,7 +58,7 @@ Set-Location frontend
 pnpm exec playwright test --project=chromium
 ```
 
-覆盖场景：注册、完整练习与填空自评、发布新版本后历史记录仍显示旧版本、自测 6:4 组卷、已完成题目的 AI 讲解、未完成会话的 AI 门禁、管理端 AI 候选审核入口。
+覆盖场景：注册、完整练习与填空自评、发布新版本后历史记录仍显示旧版本、自测 6:4 组卷、已完成题目的 AI 讲解、未完成会话的 AI 门禁、管理端 AI 候选审核入口。`core-features.spec.ts` 额外覆盖题库搜索/收藏、错题移出、记录详情、昵称/密码/注销、通用 AI、题目创建/送审/发布、CSV 导入和目录标签维护；完整套件共 22 条，仅运行 Chromium。
 
 P3 的 AI 对话测试需要 Python AI 服务以 Mock 模式运行：
 
@@ -67,7 +67,7 @@ Set-Location backend/python
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8000
 ```
 
-Playwright 固定使用 1 个 worker：演示账号、共享题库和进行中会话会互相影响，串行执行与 CI 保持一致。
+Playwright 固定使用 1 个 worker：演示账号、共享题库和进行中会话会互相影响，串行执行与 CI 保持一致。完整套件会留下进行中会话和治理状态，重复执行前请重建数据库或使用独立数据库。
 
 ## 安全约定
 

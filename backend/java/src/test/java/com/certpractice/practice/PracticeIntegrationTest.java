@@ -137,6 +137,37 @@ class PracticeIntegrationTest extends P1TestSupport {
     }
 
     @Test
+    void autoMismatchAndManualPassAreBothPreserved() throws Exception {
+        SubjectChapter catalog = createSubjectAndChapter();
+        createPublishedBlank(catalog.subjectId(), catalog.chapterId(),
+                "auto mismatch blank " + UUID.randomUUID(), "SYN", List.of("同步"), List.of());
+        UUID userId = registerUser();
+        UUID sessionId = createSession(userId, "user", catalog.subjectId(), 10, null);
+
+        JsonNode session = getSession(userId, sessionId);
+        JsonNode blank = firstItemOfType(session, "SINGLE_BLANK");
+        saveBlankAnswer(userId, sessionId,
+                UUID.fromString(blank.path("itemId").asText()), "not the answer", 0);
+
+        JsonNode submitted = submit(userId, sessionId, "mismatch-submit", 200);
+        assertThat(submitted.path("status").asText()).isEqualTo("PENDING_SELF_ASSESSMENT");
+        assertThat(submitted.path("items").get(0).path("autoMatchResult").asText())
+                .isEqualTo("MISMATCH");
+        assertThat(submitted.path("items").get(0).path("finalResult").isMissingNode()).isTrue();
+
+        JsonNode assessed = selfAssess(userId, sessionId, blank, "PASS", 200);
+        assertThat(assessed.path("sessionStatus").asText()).isEqualTo("COMPLETED");
+
+        JsonNode result = getJson("/api/v1/practice-sessions/" + sessionId + "/result", userId);
+        JsonNode item = result.path("items").get(0);
+        assertThat(item.path("autoMatchResult").asText()).isEqualTo("MISMATCH");
+        assertThat(item.path("selfAssessmentResult").asText()).isEqualTo("PASS");
+        assertThat(item.path("finalResult").asText()).isEqualTo("PASS");
+        assertThat(result.path("fill").path("autoMatched").asInt()).isZero();
+        assertThat(result.path("fill").path("selfPassed").asInt()).isEqualTo(1);
+    }
+
+    @Test
     void wrongQuestionsFavoritesAndOwnershipFollowP1Rules() throws Exception {
         SubjectChapter catalog = createSubjectAndChapter();
         QuestionRef choice = createPublishedChoice(catalog.subjectId(), catalog.chapterId(),

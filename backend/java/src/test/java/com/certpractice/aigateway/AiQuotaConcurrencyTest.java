@@ -158,7 +158,9 @@ class AiQuotaConcurrencyTest extends P3TestSupport {
         UUID conversationId = createGeneralConversation(userId);
         AI_SERVER.respondChat(500, "failed", 0, 0, 0);
 
-        sendMessage(userId, conversationId, "这次调用会失败", "failed-key", 503);
+        MvcResult failed = sendMessage(userId, conversationId, "这次调用会失败", "failed-key", 503);
+        assertThat(failed.getResponse().getContentAsString())
+                .doesNotContain("这次调用会失败", "provider secret", "stack");
 
         JsonNode quota = getJson("/api/v1/ai/quota", userId);
         assertThat(quota.path("used").asInt()).isZero();
