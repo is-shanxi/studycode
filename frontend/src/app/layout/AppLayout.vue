@@ -20,6 +20,8 @@ async function signOut(): Promise<void> {
       <RouterLink class="brand" to="/app">考证刷题平台</RouterLink>
       <nav class="app-nav" aria-label="用户导航">
         <RouterLink to="/app/library">题库</RouterLink>
+        <RouterLink to="/app/selftest">自测</RouterLink>
+        <RouterLink to="/app/assistant">AI 助手</RouterLink>
         <RouterLink to="/app/records">记录</RouterLink>
         <RouterLink to="/app/favorites">收藏</RouterLink>
         <RouterLink to="/app/wrong-questions">错题</RouterLink>

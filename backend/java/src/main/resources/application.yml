@@ -75,8 +75,25 @@ app:
   ai:
     base-url: ${JAVA_AI_BASE_URL:http://localhost:8000}
     service-token: ${JAVA_AI_SERVICE_TOKEN:local-internal-token}
+    provider: ${AI_PROVIDER:mock}
+    model: ${AI_MODEL:mock-model}
     connect-timeout: ${JAVA_AI_CONNECT_TIMEOUT_SECONDS:5}s
     request-timeout: ${JAVA_AI_REQUEST_TIMEOUT_SECONDS:30}s
+    quota:
+      daily-request-limit: ${AI_DAILY_REQUEST_LIMIT:10}
+      session-turn-limit: ${AI_SESSION_TURN_LIMIT:20}
+      max-input-chars: ${AI_MAX_INPUT_CHARS:2000}
+      team-daily-budget: ${AI_TEAM_DAILY_BUDGET:1.0}
+      reserved-cost: ${AI_RESERVED_COST:0.001}
+    context:
+      send-official-answer: ${AI_SEND_OFFICIAL_ANSWER:false}
+    generation:
+      scheduler-enabled: ${AI_GENERATION_SCHEDULER_ENABLED:true}
+      poll-delay-ms: ${AI_GENERATION_POLL_DELAY_MS:5000}
+      lease-duration: ${AI_GENERATION_LEASE_DURATION:2m}
+      max-attempts: ${AI_GENERATION_MAX_ATTEMPTS:3}
+      default-target-count: ${AI_GENERATION_DEFAULT_TARGET_COUNT:30}
+      prompt-version: ${AI_PROMPT_VERSION:v1}
   practice:
     selection:
       unseen-weight: 0.5

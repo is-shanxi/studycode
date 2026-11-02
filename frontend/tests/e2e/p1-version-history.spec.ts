@@ -108,6 +108,10 @@ test('historical records keep the old version after a new version is published',
     expect(newItem).toBeTruthy()
     expect(newItem!.question.questionVersionId).toBe(secondVersionId)
     expect(newItem!.question.stem).toContain('v2')
+
+    // Do not leave an in-progress session behind: discussions for any question
+    // in it are blocked for this user until it is submitted or abandoned.
+    await apiJson(student, 'POST', `/api/v1/practice-sessions/${newSession.sessionId}/abandon`)
   } finally {
     await admin.dispose()
     await student.dispose()

@@ -12,12 +12,20 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record AiProperties(
         String baseUrl,
         String serviceToken,
+        String provider,
+        String model,
         Duration connectTimeout,
         Duration requestTimeout) {
 
     public AiProperties {
         if (baseUrl == null || baseUrl.isBlank()) {
             baseUrl = "http://localhost:8000";
+        }
+        if (provider == null || provider.isBlank()) {
+            provider = "mock";
+        }
+        if (model == null || model.isBlank()) {
+            model = "mock-model";
         }
         if (connectTimeout == null) {
             connectTimeout = Duration.ofSeconds(5);

@@ -11,6 +11,7 @@ import com.certpractice.question.QuestionOptionRepository;
 import com.certpractice.question.QuestionRepository;
 import com.certpractice.question.QuestionVersion;
 import com.certpractice.question.QuestionVersionRepository;
+import com.certpractice.selftest.SelfTestSelectionService;
 import com.certpractice.shared.error.ApiException;
 import com.certpractice.shared.error.ErrorCode;
 import com.certpractice.shared.idempotency.IdempotencyService;
@@ -39,6 +40,7 @@ public class PracticeSessionService {
     private final QuestionVersionRepository versions;
     private final QuestionOptionRepository options;
     private final QuestionSelectionService selectionService;
+    private final SelfTestSelectionService selfTestSelectionService;
     private final PracticeDtoMapper mapper;
     private final IdempotencyService idempotency;
     private final ObjectMapper objectMapper;
@@ -51,6 +53,7 @@ public class PracticeSessionService {
             final QuestionVersionRepository versions,
             final QuestionOptionRepository options,
             final QuestionSelectionService selectionService,
+            final SelfTestSelectionService selfTestSelectionService,
             final PracticeDtoMapper mapper,
             final IdempotencyService idempotency,
             final ObjectMapper objectMapper) {
@@ -61,6 +64,7 @@ public class PracticeSessionService {
         this.versions = versions;
         this.options = options;
         this.selectionService = selectionService;
+        this.selfTestSelectionService = selfTestSelectionService;
         this.mapper = mapper;
         this.idempotency = idempotency;
         this.objectMapper = objectMapper;
@@ -87,8 +91,10 @@ public class PracticeSessionService {
                 ErrorCode.VALIDATION_FAILED,
                 "requestedCount must be between 1 and " + MAX_REQUESTED_COUNT);
 
-        QuestionSelectionService.SelectionResult selection = selectionService.select(
-                userId, request.filters(), requestedCount, mode);
+        QuestionSelectionService.SelectionResult selection = mode == PracticeSession.Mode.SELF_TEST
+                ? selfTestSelectionService.select(
+                        userId, request.filters(), requestedCount, request.composition(), mode)
+                : selectionService.select(userId, request.filters(), requestedCount, mode);
         int originalCount = 0;
         int aiVariantCount = 0;
         for (QuestionSelectionService.SelectedQuestion item : selection.items()) {

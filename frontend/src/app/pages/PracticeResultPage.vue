@@ -18,6 +18,7 @@ const pendingFills = computed<ResultItemView[]>(
       (item) => item.type === 'SINGLE_BLANK' && !item.selfAssessmentResult,
     ) ?? [],
 )
+const canUseAi = computed(() => result.value?.allowedActions.includes('AI_TUTOR') ?? false)
 
 onMounted(async () => {
   loading.value = true
@@ -40,6 +41,12 @@ onMounted(async () => {
         <p class="lead">结果按会话创建时固定的题目版本展示，不受后续编辑影响。</p>
       </div>
       <div class="head-links">
+        <RouterLink
+          v-if="result?.mode === 'SELF_TEST'"
+          :to="{ name: 'app-selftest-result', params: { sessionId } }"
+        >
+          自测分析
+        </RouterLink>
         <RouterLink to="/app/library">继续练习</RouterLink>
         <RouterLink to="/app/records">全部记录</RouterLink>
       </div>
@@ -71,6 +78,29 @@ onMounted(async () => {
       </el-alert>
 
       <PracticeResultPanel :result="result" />
+
+      <section v-if="canUseAi" class="ai-entry">
+        <div class="ai-entry-head">
+          <div>
+            <p class="eyebrow">AI 辅导</p>
+            <h2>本题讲解</h2>
+          </div>
+          <p class="ai-entry-note">仅本人已完成会话可访问；上下文默认不包含官方答案和解析。</p>
+        </div>
+        <div class="ai-links">
+          <RouterLink
+            v-for="(item, index) in result.items"
+            :key="item.itemId"
+            :to="{
+              name: 'app-assistant',
+              query: { sessionItemId: item.itemId, sessionId },
+            }"
+          >
+            第 {{ index + 1 }} 题 · {{ item.stem.slice(0, 22)
+            }}{{ item.stem.length > 22 ? '…' : '' }}
+          </RouterLink>
+        </div>
+      </section>
     </template>
   </section>
 </template>
@@ -128,6 +158,57 @@ h1 {
 }
 
 .pending-links a {
+  color: var(--color-accent);
+}
+
+.ai-entry {
+  margin-top: 1.5rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  background: var(--color-surface);
+}
+
+.ai-entry-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.ai-entry h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.ai-entry-note {
+  max-width: 24rem;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
+.ai-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.5rem;
+}
+
+.ai-links a {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.65rem;
+  background: var(--color-chip);
+  color: var(--color-text);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.ai-links a:hover {
+  border-color: var(--color-accent);
   color: var(--color-accent);
 }
 

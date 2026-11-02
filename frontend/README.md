@@ -2,7 +2,7 @@
 
 Vue 3 + TypeScript + Vite + Element Plus 单页应用，通过 `/app`（用户端）和 `/admin`（管理端）分区，共用一个 API 客户端。
 
-## P1 页面
+## 页面
 
 用户端：
 
@@ -14,6 +14,9 @@ Vue 3 + TypeScript + Vite + Element Plus 单页应用，通过 `/app`（用户�
 - `/app/practice/:sessionId/result`：客观单选、自动匹配和自评结果分开展示。
 - `/app/records`、`/app/records/:sessionId`：记录列表与按当时版本回放详情。
 - `/app/favorites`、`/app/wrong-questions`：收藏与错题管理。
+- `/app/selftest`：自测范围、6:4 比例、历史窗口与题量配置。
+- `/app/selftest/:sessionId/result`：自测来源组成、回退提示与结果。
+- `/app/assistant`：通用 AI 助手与已完成题目的本题讲解，展示剩余额度、轮次和团队预算。
 - `/app/account`：资料、密码和注销。
 
 管理端：
@@ -22,6 +25,9 @@ Vue 3 + TypeScript + Vite + Element Plus 单页应用，通过 `/app`（用户�
 - `/admin/questions/new`、`/admin/questions/:questionId/edit`：草稿编辑、送审、审核发布、版本历史。
 - `/admin/review`：待审核队列。
 - `/admin/import`：CSV/XLSX 上传、错误预览、确认导入。
+- `/admin/catalog`：证书、科目、章节和标签维护。
+- `/admin/ai`：AI 生成任务、额度配置与候选入口。
+- `/admin/ai/candidates/:batchId`：候选校验状态、审核与发布。
 
 ## 命令
 
@@ -52,7 +58,16 @@ Set-Location frontend
 pnpm exec playwright test --project=chromium
 ```
 
-覆盖场景：注册、完整练习与填空自评、发布新版本后历史记录仍显示旧版本。
+覆盖场景：注册、完整练习与填空自评、发布新版本后历史记录仍显示旧版本、自测 6:4 组卷、已完成题目的 AI 讲解、未完成会话的 AI 门禁、管理端 AI 候选审核入口。
+
+P3 的 AI 对话测试需要 Python AI 服务以 Mock 模式运行：
+
+```powershell
+Set-Location backend/python
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8000
+```
+
+Playwright 固定使用 1 个 worker：演示账号、共享题库和进行中会话会互相影响，串行执行与 CI 保持一致。
 
 ## 安全约定
 

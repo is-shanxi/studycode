@@ -170,6 +170,11 @@ public class PracticeDtoMapper {
                 session.getStatus().name(),
                 session.getRequestedCount(),
                 session.getActualCount(),
+                new PracticeDtos.CompositionView(
+                        session.getOriginalCount(),
+                        session.getAiVariantCount(),
+                        bucketCounts(items)),
+                allowedActions(session.getStatus()),
                 session.getStartedAt(),
                 session.getSubmittedAt(),
                 session.getCompletedAt(),
@@ -295,9 +300,25 @@ public class PracticeDtoMapper {
             case IN_PROGRESS -> List.of("SAVE_ANSWER", "SUBMIT", "ABANDON");
             case SUBMITTED -> List.of("VIEW_RESULT");
             case PENDING_SELF_ASSESSMENT -> List.of("SELF_ASSESS", "VIEW_RESULT");
-            case COMPLETED -> List.of("VIEW_RESULT");
+            case COMPLETED -> List.of("VIEW_RESULT", "AI_TUTOR");
             case ABANDONED -> List.of();
         };
+    }
+
+    private PracticeDtos.BucketCounts bucketCounts(final List<SessionItem> items) {
+        int unseen = 0;
+        int wrong = 0;
+        int normal = 0;
+        for (SessionItem item : items) {
+            switch (item.getSelectionBucket()) {
+                case UNSEEN -> unseen++;
+                case WRONG -> wrong++;
+                case NORMAL -> normal++;
+                default -> {
+                }
+            }
+        }
+        return new PracticeDtos.BucketCounts(unseen, wrong, normal);
     }
 
     private record AnswerParts(UUID selectedOptionId, String text, int revision) {

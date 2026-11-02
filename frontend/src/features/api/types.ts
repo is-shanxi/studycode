@@ -209,6 +209,8 @@ export interface ResultView {
   status: SessionStatus
   requestedCount: number
   actualCount: number
+  composition: CompositionView
+  allowedActions: string[]
   startedAt: string
   submittedAt?: string
   completedAt?: string
@@ -578,4 +580,121 @@ export interface ChapterCreatePayload extends CatalogEntryPayload {
 export interface TagPayload {
   name: string
   status?: CatalogStatus
+}
+
+export type AiConversationScope = 'GENERAL' | 'QUESTION'
+export type AiConversationStatus = 'ACTIVE' | 'ARCHIVED' | 'CLEARED'
+export type AiMessageRole = 'SYSTEM' | 'USER' | 'ASSISTANT'
+
+export interface AiMessageView {
+  messageId: string
+  role: AiMessageRole
+  content: string
+  provider?: string
+  modelName?: string
+  inputTokens?: number
+  outputTokens?: number
+  createdAt: string
+}
+
+export interface AiConversationView {
+  conversationId: string
+  scope: AiConversationScope
+  status: AiConversationStatus
+  questionId?: string
+  questionVersionId?: string
+  sessionItemId?: string
+  createdAt: string
+  lastMessageAt: string
+  messages: AiMessageView[]
+}
+
+export interface AiTeamBudgetView {
+  limit: number
+  used: number
+  available: boolean
+}
+
+export interface AiQuotaView {
+  date: string
+  dailyLimit: number
+  used: number
+  remaining: number
+  sessionTurnLimit: number
+  turnsUsed: number
+  maxInputChars: number
+  officialAnswerContextEnabled: boolean
+  teamBudget: AiTeamBudgetView
+}
+
+export interface AiSendMessageResponse {
+  conversationId: string
+  requestId: string
+  userMessage: AiMessageView
+  assistantMessage: AiMessageView
+  usage: {
+    inputTokens: number
+    outputTokens: number
+  }
+  quota: AiQuotaView
+}
+
+export interface AiSettingsPayload {
+  dailyRequestLimit: number
+  sessionTurnLimit: number
+  maxInputChars: number
+  teamDailyBudget: number
+  reservedCost: number
+  sendOfficialAnswer: boolean
+}
+
+export interface AiConfigView {
+  key: string
+  versionNo: number
+  effectiveFrom?: string
+  createdBy?: string
+  value: AiSettingsPayload
+}
+
+export interface AiCandidateOption {
+  key: string
+  content: string
+  isCorrect: boolean
+}
+
+export interface AiGeneratedCandidate {
+  stem: string
+  type: QuestionType
+  options?: AiCandidateOption[]
+  referenceAnswer?: string
+  explanation: string
+  difficulty: Difficulty
+  suggestedTags: string[]
+}
+
+export interface AiGenerationCandidateView {
+  candidateId: string
+  batchId: string
+  sourceQuestionVersionId: string
+  candidate: AiGeneratedCandidate
+  contentHash: string
+  validationStatus: 'PENDING' | 'VALID' | 'INVALID'
+  reviewStatus: 'PENDING' | 'APPROVED' | 'REJECTED'
+  convertedQuestionVersionId?: string
+  createdAt: string
+}
+
+export interface AiGenerationBatchView {
+  batchId: string
+  status: string
+  subjectId: string
+  chapterId?: string
+  targetCount: number
+  modelName: string
+  promptVersion: string
+  attemptCount: number
+  lastError?: string
+  createdAt: string
+  completedAt?: string
+  candidates: AiGenerationCandidateView[]
 }

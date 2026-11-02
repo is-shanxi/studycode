@@ -8,4 +8,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface AiMessageRepository extends JpaRepository<AiMessage, UUID> {
 
     List<AiMessage> findByConversationIdOrderByCreatedAtAsc(UUID conversationId);
+
+    void deleteByConversationId(UUID conversationId);
 }

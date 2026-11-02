@@ -11,6 +11,7 @@ from app.api import chat, generate, health
 from app.config import Settings, get_settings
 from app.observability import RequestContextMiddleware, configure_logging
 from app.providers import build_provider
+from app.providers.errors import ProviderConfigurationError, ProviderError, ProviderTimeoutError
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,39 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             message="Request validation failed",
         )
 
+    @app.exception_handler(ProviderTimeoutError)
+    async def provider_timeout_handler(
+        request: Request, _exc: ProviderTimeoutError
+    ) -> JSONResponse:
+        return _error_response(
+            request,
+            status_code=504,
+            code="AI_TIMEOUT",
+            message="AI provider timed out",
+            retryable=True,
+        )
+
+    @app.exception_handler(ProviderConfigurationError)
+    async def provider_configuration_handler(
+        request: Request, _exc: ProviderConfigurationError
+    ) -> JSONResponse:
+        return _error_response(
+            request,
+            status_code=503,
+            code="AI_UNAVAILABLE",
+            message="AI provider is not configured",
+        )
+
+    @app.exception_handler(ProviderError)
+    async def provider_error_handler(request: Request, _exc: ProviderError) -> JSONResponse:
+        return _error_response(
+            request,
+            status_code=502,
+            code="AI_PROVIDER_ERROR",
+            message="AI provider request failed",
+            retryable=True,
+        )
+
     @app.exception_handler(StarletteHTTPException)
     async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
         if isinstance(exc.detail, dict):
@@ -77,14 +111,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     return app
 
 
-def _error_response(request: Request, *, status_code: int, code: str, message: str) -> JSONResponse:
+def _error_response(
+    request: Request,
+    *,
+    status_code: int,
+    code: str,
+    message: str,
+    retryable: bool = False,
+) -> JSONResponse:
     return JSONResponse(
         status_code=status_code,
         content={
             "code": code,
             "message": message,
             "requestId": getattr(request.state, "request_id", "unknown"),
-            "retryable": False,
+            "retryable": retryable,
         },
     )
 

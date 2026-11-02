@@ -86,7 +86,7 @@ python -m pip install -e ".[dev]"
 python -m uvicorn app.main:app --port 8000 --reload
 ```
 
-预期：`GET http://localhost:8000/health/live` 返回 `{"status":"ok"}`。默认 Mock 模式不调用外部供应商。
+预期：`GET http://localhost:8000/health/live` 返回 `{"status":"ok"}`。默认 Mock 模式不调用外部供应商；真实供应商使用 `AI_PROVIDER=openai-compatible`、`AI_PROVIDER_BASE_URL`、`AI_MODEL` 和 `AI_API_KEY`。
 
 ### 4.4 Vue 前端
 
@@ -101,6 +101,15 @@ pnpm dev
 - `http://localhost:5173/app` 打开用户端。
 - `http://localhost:5173/admin` 在管理员登录后可用。
 - Vite 开发代理把 `/api` 转发到 Java，浏览器形成同源 Cookie 与 CSRF 调用。
+
+### 4.5 自测与 AI（P3）
+
+1. 以 `student01` 登录，打开 `/app/selftest`，保留默认 60/40 比例并开始自测。
+2. 预期会话页显示 `原题 6 / AI 变式 4`；完成全部题目并提交，填空题逐题自评。
+3. 结果页出现“本题讲解”入口；打开后应看到剩余额度、会话轮次和团队预算。发送问题后，Mock 模式返回 `[mock]` 开头的内容。
+4. 新建一场未提交的普通练习，直接请求本题 AI；Java 应返回 `409 STATE_CONFLICT`，Python 不应收到该题上下文。
+5. 以 `admin` 登录 `/admin/ai`，可看到种子生成任务与 `PENDING_REVIEW` 候选；批准候选后会转换为已发布题目版本，拒绝则不会创建题目。
+6. 在 `/admin/ai` 修改个人额度、会话轮次或团队预算后保存，配置版本递增；`/app/assistant` 的额度面板按新配置展示。
 
 ## 5. 演示账号与数据
 
@@ -196,4 +205,4 @@ P1 本地验收必须满足：
 - 核心单元、集成和 E2E 测试通过。
 - 演示数据可重建，不依赖手工改库。
 
-P2/P3 分别在对应阶段补齐 V-11 至 V-15。真实模型联调前，Mock 路径必须先全部通过。
+P2/P3 已补齐 V-11 至 V-15 的自动化与人工检查。真实模型联调前，Mock 路径必须先全部通过；E2E 的 AI 场景需要按 4.3 启动 Python 服务。

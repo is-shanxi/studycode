@@ -34,6 +34,8 @@ tags:
     description: 站内通知
   - name: admin
     description: 题目、用户、审核、看板、审计与目录维护
+  - name: ai
+    description: AI 辅导、额度与会话
 security:
   - cookieAuth: []
 paths:
@@ -1876,6 +1878,307 @@ paths:
           $ref: '#/components/responses/NotFound'
         '409':
           $ref: '#/components/responses/Conflict'
+
+  /ai/quota:
+    get:
+      tags: [ai]
+      operationId: getAiQuota
+      summary: 查询当前用户 AI 额度与会话轮次
+      parameters:
+        - name: conversationId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 当前额度、轮次与团队预算状态
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiQuotaView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+  /ai/conversations:
+    post:
+      tags: [ai]
+      operationId: createAiConversation
+      summary: 创建通用或题目 AI 会话
+      description: 题目会话必须引用本人已完成且已自评的会话项。
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiCreateConversationRequest'
+      responses:
+        '201':
+          description: 会话已创建
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiConversationView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+  /ai/conversations/{conversationId}:
+    get:
+      tags: [ai]
+      operationId: getAiConversation
+      summary: 获取本人 AI 会话消息
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 会话与消息
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiConversationView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [ai]
+      operationId: clearAiConversation
+      summary: 清空本人 AI 会话记录
+      description: 只移除用户可见消息，团队成本记录继续保留。
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: 会话已清空
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /ai/conversations/{conversationId}/messages:
+    post:
+      tags: [ai]
+      operationId: sendAiMessage
+      summary: 发送 AI 消息
+      description: 服务端先原子预占个人额度和团队预算，再调用 Python；重复幂等键返回原响应。
+      parameters:
+        - name: conversationId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiSendMessageRequest'
+      responses:
+        '200':
+          description: 用户消息、助手回复与更新后的额度
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiSendMessageResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+  /admin/configs:
+    get:
+      tags: [admin]
+      operationId: getAdminConfig
+      summary: 查询版本化 AI 配置
+      parameters:
+        - name: key
+          in: query
+          required: false
+          schema:
+            type: string
+            default: ai.settings
+      responses:
+        '200':
+          description: 最新配置版本
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiConfigView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [admin]
+      operationId: updateAdminConfig
+      summary: 创建新的 AI 配置版本
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiConfigUpdateRequest'
+      responses:
+        '200':
+          description: 新配置版本
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiConfigView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+  /admin/ai/generation-batches:
+    get:
+      tags: [admin]
+      operationId: listAiGenerationBatches
+      summary: 分页查询 AI 生成任务
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: 生成任务分页
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiGenerationBatchPage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      tags: [admin]
+      operationId: createAiGenerationBatch
+      summary: 创建 AI 变式生成任务
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiGenerationBatchRequest'
+      responses:
+        '201':
+          description: 任务已创建，等待调度器领取
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiGenerationBatchView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /admin/ai/generation-batches/{batchId}:
+    get:
+      tags: [admin]
+      operationId: getAiGenerationBatch
+      summary: 查询生成任务与候选
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 生成任务详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiGenerationBatchView'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /admin/ai/generation-candidates/{candidateId}/review:
+    post:
+      tags: [admin]
+      operationId: reviewAiGenerationCandidate
+      summary: 审核候选并转换为正式题目版本
+      parameters:
+        - name: candidateId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AiCandidateReviewRequest'
+      responses:
+        '200':
+          description: 审核结果
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AiGenerationCandidateView'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
 components:
   securitySchemes:
     cookieAuth:
@@ -2994,3 +3297,361 @@ components:
         name: {type: string, minLength: 1, maxLength: 64}
         status:
           $ref: '#/components/schemas/CatalogStatus'
+
+    AiTeamBudgetView:
+      type: object
+      required: [limit, used, available]
+      properties:
+        limit:
+          type: number
+        used:
+          type: number
+        available:
+          type: boolean
+    AiQuotaView:
+      type: object
+      required:
+        - date
+        - dailyLimit
+        - used
+        - remaining
+        - sessionTurnLimit
+        - turnsUsed
+        - maxInputChars
+        - officialAnswerContextEnabled
+        - teamBudget
+      properties:
+        date:
+          type: string
+          format: date
+        dailyLimit:
+          type: integer
+        used:
+          type: integer
+        remaining:
+          type: integer
+        sessionTurnLimit:
+          type: integer
+        turnsUsed:
+          type: integer
+        maxInputChars:
+          type: integer
+        officialAnswerContextEnabled:
+          type: boolean
+        teamBudget:
+          $ref: '#/components/schemas/AiTeamBudgetView'
+    AiMessageView:
+      type: object
+      required: [messageId, role, content, createdAt]
+      properties:
+        messageId:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [SYSTEM, USER, ASSISTANT]
+        content:
+          type: string
+        provider:
+          type: string
+        modelName:
+          type: string
+        inputTokens:
+          type: integer
+        outputTokens:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+    AiConversationView:
+      type: object
+      required: [conversationId, scope, status, createdAt, lastMessageAt, messages]
+      properties:
+        conversationId:
+          type: string
+          format: uuid
+        scope:
+          type: string
+          enum: [GENERAL, QUESTION]
+        status:
+          type: string
+          enum: [ACTIVE, ARCHIVED, CLEARED]
+        questionId:
+          type: string
+          format: uuid
+        questionVersionId:
+          type: string
+          format: uuid
+        sessionItemId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+        lastMessageAt:
+          type: string
+          format: date-time
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiMessageView'
+    AiCreateConversationRequest:
+      type: object
+      required: [scope]
+      properties:
+        scope:
+          type: string
+          enum: [GENERAL, QUESTION]
+        sessionItemId:
+          type: string
+          format: uuid
+    AiSendMessageRequest:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 4000
+    AiUsageView:
+      type: object
+      required: [inputTokens, outputTokens]
+      properties:
+        inputTokens:
+          type: integer
+        outputTokens:
+          type: integer
+    AiSendMessageResponse:
+      type: object
+      required: [conversationId, requestId, userMessage, assistantMessage, usage, quota]
+      properties:
+        conversationId:
+          type: string
+          format: uuid
+        requestId:
+          type: string
+          format: uuid
+        userMessage:
+          $ref: '#/components/schemas/AiMessageView'
+        assistantMessage:
+          $ref: '#/components/schemas/AiMessageView'
+        usage:
+          $ref: '#/components/schemas/AiUsageView'
+        quota:
+          $ref: '#/components/schemas/AiQuotaView'
+    AiSettingsPayload:
+      type: object
+      required:
+        - dailyRequestLimit
+        - sessionTurnLimit
+        - maxInputChars
+        - teamDailyBudget
+        - reservedCost
+        - sendOfficialAnswer
+      properties:
+        dailyRequestLimit:
+          type: integer
+          minimum: 1
+          maximum: 1000
+        sessionTurnLimit:
+          type: integer
+          minimum: 1
+          maximum: 200
+        maxInputChars:
+          type: integer
+          minimum: 1
+          maximum: 20000
+        teamDailyBudget:
+          type: number
+          minimum: 0
+        reservedCost:
+          type: number
+          exclusiveMinimum: 0
+        sendOfficialAnswer:
+          type: boolean
+    AiConfigView:
+      type: object
+      required: [key, versionNo, value]
+      properties:
+        key:
+          type: string
+        versionNo:
+          type: integer
+        effectiveFrom:
+          type: string
+          format: date-time
+        createdBy:
+          type: string
+          format: uuid
+        value:
+          $ref: '#/components/schemas/AiSettingsPayload'
+    AiConfigUpdateRequest:
+      type: object
+      required: [key, value]
+      properties:
+        key:
+          type: string
+        value:
+          $ref: '#/components/schemas/AiSettingsPayload'
+    AiGenerationBatchRequest:
+      type: object
+      required: [subjectId, sourceQuestionIds]
+      properties:
+        subjectId:
+          type: string
+          format: uuid
+        chapterId:
+          type: string
+          format: uuid
+        sourceQuestionIds:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            format: uuid
+        targetCount:
+          type: integer
+          minimum: 1
+          maximum: 100
+        difficulty:
+          type: string
+          enum: [EASY, MEDIUM, HARD]
+    AiCandidateOption:
+      type: object
+      required: [key, content, isCorrect]
+      properties:
+        key:
+          type: string
+        content:
+          type: string
+        isCorrect:
+          type: boolean
+    AiGeneratedCandidate:
+      type: object
+      required: [stem, type, explanation, difficulty]
+      properties:
+        stem:
+          type: string
+        type:
+          type: string
+          enum: [SINGLE_CHOICE, SINGLE_BLANK]
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiCandidateOption'
+        referenceAnswer:
+          type: string
+        explanation:
+          type: string
+        difficulty:
+          type: string
+          enum: [EASY, MEDIUM, HARD]
+        suggestedTags:
+          type: array
+          items:
+            type: string
+    AiGenerationCandidateView:
+      type: object
+      required:
+        - candidateId
+        - batchId
+        - sourceQuestionVersionId
+        - candidate
+        - contentHash
+        - validationStatus
+        - reviewStatus
+        - createdAt
+      properties:
+        candidateId:
+          type: string
+          format: uuid
+        batchId:
+          type: string
+          format: uuid
+        sourceQuestionVersionId:
+          type: string
+          format: uuid
+        candidate:
+          $ref: '#/components/schemas/AiGeneratedCandidate'
+        contentHash:
+          type: string
+        validationStatus:
+          type: string
+          enum: [PENDING, VALID, INVALID]
+        reviewStatus:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED]
+        convertedQuestionVersionId:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+    AiGenerationBatchView:
+      type: object
+      required:
+        - batchId
+        - status
+        - subjectId
+        - targetCount
+        - modelName
+        - promptVersion
+        - attemptCount
+        - createdAt
+        - candidates
+      properties:
+        batchId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [CREATED, RUNNING, VALIDATING, PENDING_REVIEW, COMPLETED, FAILED]
+        subjectId:
+          type: string
+          format: uuid
+        chapterId:
+          type: string
+          format: uuid
+        targetCount:
+          type: integer
+        modelName:
+          type: string
+        promptVersion:
+          type: string
+        attemptCount:
+          type: integer
+        lastError:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        candidates:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiGenerationCandidateView'
+    AiGenerationBatchPage:
+      type: object
+      required: [items, page, size, total]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AiGenerationBatchView'
+        page:
+          type: integer
+        size:
+          type: integer
+        total:
+          type: integer
+    AiCandidateReviewRequest:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [APPROVE, REJECT]
+        comment:
+          type: string

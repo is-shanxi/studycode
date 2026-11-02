@@ -19,6 +19,8 @@ class ChatContext(InternalModel):
     question_type: str | None = None
     user_answer: str | None = None
     self_assessment: str | None = None
+    explanation: str | None = None
+    reference_answer: str | None = None
 
 
 class ChatLimits(InternalModel):

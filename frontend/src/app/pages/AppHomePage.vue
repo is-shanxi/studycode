@@ -20,6 +20,14 @@ const session = useSessionStore()
         <span class="quick-title">题库筛选</span>
         <span class="quick-desc">按目录、标签、难度和关键词选题</span>
       </RouterLink>
+      <RouterLink class="quick-card" to="/app/selftest">
+        <span class="quick-title">个性化自测</span>
+        <span class="quick-desc">默认 6:4 原题与已审核 AI 变式，自动降级补题</span>
+      </RouterLink>
+      <RouterLink class="quick-card" to="/app/assistant">
+        <span class="quick-title">AI 辅导助手</span>
+        <span class="quick-desc">通用问答；已完成题目可打开本题讲解</span>
+      </RouterLink>
       <RouterLink class="quick-card" to="/app/records">
         <span class="quick-title">刷题记录</span>
         <span class="quick-desc">查看历史成绩和当时题目版本</span>

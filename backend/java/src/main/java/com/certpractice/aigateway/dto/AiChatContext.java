@@ -9,5 +9,7 @@ public record AiChatContext(
         String stem,
         String questionType,
         String userAnswer,
-        String selfAssessment) {
+        String selfAssessment,
+        String explanation,
+        String referenceAnswer) {
 }

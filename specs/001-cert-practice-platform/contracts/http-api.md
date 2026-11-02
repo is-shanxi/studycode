@@ -396,6 +396,46 @@ difficulty, type, page, size
 - 会话轮次或个人额度超限返回 `429`。
 - AI 暂不可用返回 `503`；不泄露供应商内部错误。
 
+额度响应：
+
+```json
+{
+  "date": "2026-11-01",
+  "dailyLimit": 10,
+  "used": 2,
+  "remaining": 8,
+  "sessionTurnLimit": 20,
+  "turnsUsed": 2,
+  "maxInputChars": 2000,
+  "officialAnswerContextEnabled": false,
+  "teamBudget": { "limit": 1.0, "used": 0.002, "available": true }
+}
+```
+
+发送消息响应：
+
+```json
+{
+  "conversationId": "uuid",
+  "requestId": "uuid",
+  "userMessage": { "messageId": "uuid", "role": "USER", "content": "问题", "createdAt": "..." },
+  "assistantMessage": {
+    "messageId": "uuid",
+    "role": "ASSISTANT",
+    "content": "回答",
+    "provider": "mock",
+    "modelName": "mock-model",
+    "inputTokens": 12,
+    "outputTokens": 8,
+    "createdAt": "..."
+  },
+  "usage": { "inputTokens": 12, "outputTokens": 8 },
+  "quota": { "dailyLimit": 10, "used": 3, "remaining": 7 }
+}
+```
+
+服务器先提交额度预占和用户消息，再调用 Python，最后以独立事务保存助手消息并结算；失败请求退还个人次数，团队预算预占保留为保守成本记录（供应商可能已计费）。
+
 ## 9. 管理端
 
 ### 9.1 题目与审核
@@ -442,6 +482,44 @@ difficulty, type, page, size
 | POST | `/admin/ai/generation-batches` | 创建变式题生成任务 |
 | POST | `/admin/ai/generation-candidates/{id}/review` | 审核候选并转换为正式版本 |
 | GET/PUT | `/admin/configs` | 抽题、AI 额度、规则配置，带版本控制 |
+
+创建生成任务：
+
+```json
+{
+  "subjectId": "uuid",
+  "chapterId": "uuid",
+  "sourceQuestionIds": ["uuid"],
+  "targetCount": 30,
+  "difficulty": "MEDIUM"
+}
+```
+
+候选审核：
+
+```json
+{ "decision": "APPROVE", "comment": "可发布" }
+```
+
+`APPROVE` 仅允许 `VALID + PENDING` 候选，成功后在单事务内转换为已发布题目版本并写入 `ai_variant_source`；`REJECT` 只记录审核结果，不创建题目。重复审核返回 `409`。
+
+AI 配置：
+
+```json
+{
+  "key": "ai.settings",
+  "value": {
+    "dailyRequestLimit": 10,
+    "sessionTurnLimit": 20,
+    "maxInputChars": 2000,
+    "teamDailyBudget": 1.0,
+    "reservedCost": 0.001,
+    "sendOfficialAnswer": false
+  }
+}
+```
+
+`GET /admin/configs?key=ai.settings` 返回最新版本；无历史版本时返回默认值和 `versionNo=0`。`PUT` 创建新版本并记录审计。
 
 管理接口不接受普通用户 Cookie 越权访问；公开注册不能创建管理员。
 

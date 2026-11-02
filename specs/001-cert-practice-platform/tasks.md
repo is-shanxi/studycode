@@ -215,39 +215,39 @@
 
 ### Tests for User Story 3
 
-- [ ] T120 [P] [US3] Add failing integration tests for self-test composition, shortage fallback and snapshot replay in `backend/java/src/test/java/com/certpractice/selftest/SelfTestIntegrationTest.java` (AC-08、AC-09)
-- [ ] T121 [P] [US3] Add failing tests for AI access gating, context minimization and conversation ownership in `backend/java/src/test/java/com/certpractice/aigateway/AiGateIntegrationTest.java` (AC-10)
-- [ ] T122 [P] [US3] Add failing concurrency tests for personal quota, session turns and team budget in `backend/java/src/test/java/com/certpractice/aigateway/AiQuotaConcurrencyTest.java` (AC-11)
-- [ ] T123 [P] [US3] Add failing Python tests for provider contracts, Mock output validation and timeout mapping in `backend/python/tests/test_provider_contract.py`
-- [ ] T124 [P] [US3] Add failing Playwright journeys for self-test and completed-question AI tutoring in `frontend/tests/e2e/p3-selftest-ai.spec.ts`
+- [X] T120 [P] [US3] Add failing integration tests for self-test composition, shortage fallback and snapshot replay in `backend/java/src/test/java/com/certpractice/selftest/SelfTestIntegrationTest.java` (AC-08、AC-09)
+- [X] T121 [P] [US3] Add failing tests for AI access gating, context minimization and conversation ownership in `backend/java/src/test/java/com/certpractice/aigateway/AiGateIntegrationTest.java` (AC-10)
+- [X] T122 [P] [US3] Add failing concurrency tests for personal quota, session turns and team budget in `backend/java/src/test/java/com/certpractice/aigateway/AiQuotaConcurrencyTest.java` (AC-11)
+- [X] T123 [P] [US3] Add failing Python tests for provider contracts, Mock output validation and timeout mapping in `backend/python/tests/test_provider_contract.py`
+- [X] T124 [P] [US3] Add failing Playwright journeys for self-test and completed-question AI tutoring in `frontend/tests/e2e/p3-selftest-ai.spec.ts`
 
 ### Implementation for User Story 3
 
-- [ ] T125 [US3] Implement database-leased generation batch scheduling with retry limits in `backend/java/src/main/java/com/certpractice/aigateway/AiGenerationScheduler.java` (FR-25)
-- [ ] T126 [US3] Implement candidate validation, duplicate rejection and conversion to formal question versions in `backend/java/src/main/java/com/certpractice/aigateway/AiCandidateService.java`
-- [ ] T127 [US3] Implement the internal chat contract and Mock response path in `backend/python/app/api/chat.py`
-- [ ] T128 [US3] Implement the internal variant generation contract and structured output validation in `backend/python/app/api/generate.py`
-- [ ] T129 [US3] Implement the single real provider adapter behind the provider protocol in `backend/python/app/providers/real.py` and `backend/python/app/config.py` (FR-33)
-- [ ] T130 [US3] Implement Java internal AI request, response, timeout and error mapping in `backend/java/src/main/java/com/certpractice/aigateway/AiServiceClient.java`
-- [ ] T131 [US3] Implement completed-session and ownership checks before题目 AI context creation in `backend/java/src/main/java/com/certpractice/aigateway/AiAccessService.java` (FR-30～32)
-- [ ] T132 [US3] Implement AI conversation and message persistence with clear-record behavior in `backend/java/src/main/java/com/certpractice/aigateway/AiConversationService.java`
-- [ ] T133 [US3] Implement atomic quota reservation, budget settlement and refunds in `backend/java/src/main/java/com/certpractice/aigateway/AiQuotaService.java` (FR-34)
-- [ ] T134 [US3] Implement 6:4 self-test selection, history weighting, shortage fallback and rule snapshots in `backend/java/src/main/java/com/certpractice/selftest/SelfTestSelectionService.java` (FR-22～24)
-- [ ] T135 [US3] Integrate self-test creation with the existing practice session lifecycle in `backend/java/src/main/java/com/certpractice/practice/PracticeSessionService.java`
-- [ ] T136 [US3] Implement self-test and AI conversation endpoints in `backend/java/src/main/java/com/certpractice/selftest/SelfTestController.java` and `backend/java/src/main/java/com/certpractice/aigateway/AiController.java`
-- [ ] T137 [US3] Implement admin AI batch creation, candidate review and configuration endpoints in `backend/java/src/main/java/com/certpractice/admin/AdminAiController.java`
-- [ ] T138 [US3] Implement configurable AI context policy and quota defaults in `backend/java/src/main/java/com/certpractice/aigateway/AiConfigService.java` (FR-33～34)
-- [ ] T139 [P] [US3] Implement self-test range, composition and result pages in `frontend/src/app/pages/SelfTestPage.vue` and `frontend/src/app/pages/SelfTestResultPage.vue`
-- [ ] T140 [P] [US3] Implement the general and completed-question AI assistant in `frontend/src/app/pages/AiAssistantPage.vue`
-- [ ] T141 [US3] Show题目 AI entry only when server-provided actions allow it in `frontend/src/app/pages/PracticeResultPage.vue`
-- [ ] T142 [P] [US3] Implement remaining AI quota and limit feedback in `frontend/src/app/components/AiQuotaPanel.vue`
-- [ ] T143 [US3] Implement admin AI generation monitoring and trigger UI in `frontend/src/admin/pages/AiGenerationPage.vue`
-- [ ] T144 [US3] Implement candidate review and conversion UI in `frontend/src/admin/pages/AiCandidateReviewPage.vue`
-- [ ] T145 [P] [US3] Add Mock AI and approved variant seed data in `backend/java/src/main/resources/db/seed/R__demo_p3.sql`
-- [ ] T146 [US3] Complete the Python provider and internal-contract test suite in `backend/python/tests/test_provider_contract.py`
-- [ ] T147 [US3] Complete P3 concurrency and idempotency assertions in `backend/java/src/test/java/com/certpractice/aigateway/AiQuotaConcurrencyTest.java`
-- [ ] T148 [US3] Add AI prompt, answer and secret redaction tests in `backend/python/tests/test_redaction.py`
-- [ ] T149 [US3] Complete the P3 browser journey in `frontend/tests/e2e/p3-selftest-ai.spec.ts`
+- [X] T125 [US3] Implement database-leased generation batch scheduling with retry limits in `backend/java/src/main/java/com/certpractice/aigateway/AiGenerationScheduler.java` (FR-25)
+- [X] T126 [US3] Implement candidate validation, duplicate rejection and conversion to formal question versions in `backend/java/src/main/java/com/certpractice/aigateway/AiCandidateService.java`
+- [X] T127 [US3] Implement the internal chat contract and Mock response path in `backend/python/app/api/chat.py`
+- [X] T128 [US3] Implement the internal variant generation contract and structured output validation in `backend/python/app/api/generate.py`
+- [X] T129 [US3] Implement the single real provider adapter behind the provider protocol in `backend/python/app/providers/real.py` and `backend/python/app/config.py` (FR-33)
+- [X] T130 [US3] Implement Java internal AI request, response, timeout and error mapping in `backend/java/src/main/java/com/certpractice/aigateway/AiServiceClient.java`
+- [X] T131 [US3] Implement completed-session and ownership checks before题目 AI context creation in `backend/java/src/main/java/com/certpractice/aigateway/AiAccessService.java` (FR-30～32)
+- [X] T132 [US3] Implement AI conversation and message persistence with clear-record behavior in `backend/java/src/main/java/com/certpractice/aigateway/AiConversationService.java`
+- [X] T133 [US3] Implement atomic quota reservation, budget settlement and refunds in `backend/java/src/main/java/com/certpractice/aigateway/AiQuotaService.java` (FR-34)
+- [X] T134 [US3] Implement 6:4 self-test selection, history weighting, shortage fallback and rule snapshots in `backend/java/src/main/java/com/certpractice/selftest/SelfTestSelectionService.java` (FR-22～24)
+- [X] T135 [US3] Integrate self-test creation with the existing practice session lifecycle in `backend/java/src/main/java/com/certpractice/practice/PracticeSessionService.java`
+- [X] T136 [US3] Implement AI conversation endpoints in `backend/java/src/main/java/com/certpractice/aigateway/AiController.java`; self-test creation reuses the unified `practice/PracticeController.java` endpoint per the HTTP contract
+- [X] T137 [US3] Implement admin AI batch creation, candidate review and configuration endpoints in `backend/java/src/main/java/com/certpractice/aigateway/AdminAiController.java`
+- [X] T138 [US3] Implement configurable AI context policy and quota defaults in `backend/java/src/main/java/com/certpractice/aigateway/AiConfigService.java` (FR-33～34)
+- [X] T139 [P] [US3] Implement self-test range, composition and result pages in `frontend/src/app/pages/SelfTestPage.vue` and `frontend/src/app/pages/SelfTestResultPage.vue`
+- [X] T140 [P] [US3] Implement the general and completed-question AI assistant in `frontend/src/app/pages/AiAssistantPage.vue`
+- [X] T141 [US3] Show题目 AI entry only when server-provided actions allow it in `frontend/src/app/pages/PracticeResultPage.vue`
+- [X] T142 [P] [US3] Implement remaining AI quota and limit feedback in `frontend/src/app/components/AiQuotaPanel.vue`
+- [X] T143 [US3] Implement admin AI generation monitoring and trigger UI in `frontend/src/admin/pages/AiGenerationPage.vue`
+- [X] T144 [US3] Implement candidate review and conversion UI in `frontend/src/admin/pages/AiCandidateReviewPage.vue`
+- [X] T145 [P] [US3] Add Mock AI and approved variant seed data in `backend/java/src/main/resources/db/seed/R__demo_p3.sql`
+- [X] T146 [US3] Complete the Python provider and internal-contract test suite in `backend/python/tests/test_provider_contract.py`
+- [X] T147 [US3] Complete P3 concurrency and idempotency assertions in `backend/java/src/test/java/com/certpractice/aigateway/AiQuotaConcurrencyTest.java`
+- [X] T148 [US3] Add AI prompt, answer and secret redaction tests in `backend/python/tests/test_redaction.py`
+- [X] T149 [US3] Complete the P3 browser journey in `frontend/tests/e2e/p3-selftest-ai.spec.ts`
 
 **Checkpoint**: US3 可使用 MockProvider 独立完成变式题审核、自测、AI 门禁和额度验收；通过 AC-08～AC-11。
 
