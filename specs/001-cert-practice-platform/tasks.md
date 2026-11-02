@@ -262,7 +262,7 @@
 - [X] T152 Review and tune PostgreSQL indexes and query plans for search, practice history, dashboards and selection candidate counting in `backend/java/src/main/resources/db/migration/V9__index_tuning.sql` (V7/V8 were already applied, so the index-only migration is numbered V9)
 - [ ] T153 [P] Validate responsive engineering baselines at 360 px, 768 px and 1280 px in `frontend/tests/e2e/responsive.spec.ts` without treating them as final product acceptance until confirmed
 - [X] T154 Review structured-log redaction and health checks in `backend/java/src/main/java/com/certpractice/shared/observability/` and `backend/python/app/api/health.py`
-- [ ] T155 Update architecture, operations and module ownership notes in `docs/技术设计文档.md` and `backend/java/README.md`
+- [X] T155 Update architecture, operations and module ownership notes in `docs/技术设计文档.md` and `backend/java/README.md`
 - [ ] T156 Run all frontend, Java, Python and contract checks through `scripts/check.ps1`
 - [ ] T157 Execute every applicable scenario in `quickstart.md` and record expected results in `speckit/specs/001-cert-practice-platform/quickstart.md`
 - [X] T158 Remove unused placeholders and verify all configuration keys in `infra/env/.env.example` and `infra/compose.yaml`
